@@ -1,0 +1,406 @@
+---
+title: "Norms-R Notebook Scratch Pad"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+<br>
+
+#### Use linear modeling to estimate "smoothed" medians, lo_SDs, and hi_SDs.
+
+The imputed means and SDs retain the fluctuating variability between age-groups that was present in the original raw-score distributions. The next step is to smooth out this variability by fitting regression lines to the scatter plots for age vs. med, age vs. lo_SD, and age vs. hi_SD, and using the regression coefficients from these lines to generate "smoothed" medians, lo_SDs and hi_SDs for each age group. These smoothed values become the basis for the norms moving forward.
+
+To generate the smoothed median for each age group, you choose between a 1st, 2nd, or 3rd-order polynomial equation as the smoothing forumula. The code generates fitted plots for each of these models, showing the regression coefficients and R^2^ for each, allowing you to choose the appropriate model. The 3rd-order polynomial usually provides the best fit. You can also inspect the plots for the 2nd- and 1st-order polynomials, to determine if a reasonably good fit can be achieved with a more parsimonius model. 
+
+For the lo_SDs and hi SDs, the code produces plots of the 1st-order (straight line) model and the mean substitution (horizontal line) model. Again, you select the model by examining the plots and judging which model best fits the data.
+
+Model selection is done via an interactive session. The console lists the model choices and prompts you to examine the plots and make a selection, successively for median, lo_SD, and hi_SD. In order for this interactive feature to work, the entire script must be executed from source, using `command-shift-S`.
+
+###### VALID CODE TO RUN
+```{r plot_model_med, eval=FALSE}
+rm(ANT_tot_age_lo1lo2_hi1hi2, ANTraw_by_agestrat, norm_build1)
+
+frm <- c('y ~ x', 'y ~ x + I(x^2)', 'y ~ x + I(x^2) + I(x^3)')
+title <-
+  c('1st order polynomial',
+    '2nd order polynomial',
+    '3rd order polynomial')
+lo_hi <- c('lo_SD', 'hi_SD')
+
+med_plots <- map2(
+  title,
+  frm,
+  ~
+    ggplot(norm_build_med_hilo_sum, aes(x = group, y = median)) +
+    geom_point(
+      col = 'red',
+      fill = 'red',
+      alpha = .5,
+      size = 3,
+      shape = 23
+    ) +
+    labs(
+      x = 'age group'
+      ,
+      y = 'median'
+      ,
+      title = paste0('Median: ', .x)
+    ) +
+    scale_x_continuous(breaks = seq(1, 27, 1), labels = agestrat) +
+    scale_y_continuous(breaks = seq(0, 50, 5)) +
+    geom_smooth(
+      method = 'lm',
+      se = FALSE,
+      formula = .y
+    ) +
+    stat_poly_eq(
+      formula = .y,
+      eq.with.lhs = 'italic(hat(y))~`=`~',
+      aes(label = paste(..eq.label.., ..rr.label.., sep = '*plain(\',\')~')),
+      parse = TRUE
+    )
+)
+print(med_plots)
+
+model_median_1st <- function() {
+  lm(median ~ group, data = norm_build_med_hilo_sum) %>% assign('model_median', ., envir = .GlobalEnv)
+  get_regression_points(model_median) %>% pull(median_hat) %>% assign('median_sm', ., envir = .GlobalEnv)
+}
+
+model_median_2nd <- function() {
+  lm(median ~ group + I(group ^ 2), data = norm_build_med_hilo_sum) %>% assign('model_median', ., envir = .GlobalEnv)
+  get_regression_points(model_median) %>% pull(median_hat) %>% assign('median_sm', ., envir = .GlobalEnv)
+}
+
+model_median_3rd <- function() {
+  lm(median ~ group + I(group ^ 2) + I(group ^ 3), data = norm_build_med_hilo_sum) %>% assign('model_median', ., envir = .GlobalEnv)
+  get_regression_points(model_median) %>% pull(median_hat) %>% assign('median_sm', ., envir = .GlobalEnv)
+}
+
+model_prompt_median <- function() {
+  writeLines(
+    "Examine plots and choose smoothing model for medians:\n\n1: First-order polynomial: y = ax + b\n2: Second-order polynomial: y= ax^2 + bx + c\n3: Third-order polynomial: y= ax^3 + bx^2 + cx + d\n"
+  )
+  model_choice <- as.numeric(0)
+  while (is.na(model_choice) || (!(model_choice %in% 1:3))) {
+    model_choice <-
+      suppressWarnings(as.numeric(readline(prompt = "Enter choice: ")))
+    if (is.na(model_choice)) {
+      writeLines("Please enter 1, 2, or 3\n")
+    } else {
+      if (model_choice == 1) {
+        model_median_1st()
+        break
+      } else if (model_choice == 2) {
+        model_median_2nd()
+        break
+      } else if (model_choice == 3) {
+        model_median_3rd()
+        break
+      } else {
+        writeLines("Please enter 1, 2, or 3\n")
+      }
+    }
+  }
+}
+model_prompt_median()
+```
+
+<br>
+
+#### Plot imputed medians with fitted regression lines
+
+###### COMMENTED CODE CHUNKS
+Clean up environment by dropping superfluous tables.
+```{r plot_model_med, echo=1, eval=FALSE}
+```
+Define char vectors containing formulas, plot labels. Note the formula format used for the 2nd- and 3rd-order polynomials in `frm`. The 2nd- and 3rd-order terms `x^2` and `x^3` are wrapped in `I()`. This forces R to evaluate `^` as as an _arithmetic_ operator (instead of as a _formula_ operator), and thus the polynomial expression is evaluated correctly. 
+
+As an aside, R has another format for higher-order polynomial formulas `poly()`, (e.g., `poly(x, 3)` to express a 3rd-order polynomial). `poly()` doesn't work in the current application, because it produces an orthoganol polynomial solution, which doesn't lead to usable predicted values when used to model the smoothed medians.
+```{r plot_model_med, echo=3:8, eval=FALSE}
+```
+Use `purrr::map2` to iterate over two parallel vectors of equal length. In this case, `map2` renders three scatterplots of the imputed median, by iterating over `title` (containing plot titles) and `frm` (containing regression line formulas), substituting elements of those vectors as arguments in a `ggplot` call. Note that this sets up _parallel_ iteration, where corresponding elements are drawn from both input vectors at each iteration, as opposed to _nested_ iteration, which iterates through all elements of a subordinate vector at (for) each element of a superordinate vector. 
+
+In the `map2` call, the first two arguments are the input vectors `title` and `frm`. These are followed by `~`, a shorthand for designating an anonymous function. The iteration tokens `.x` and `.y` appear in the body of the function at the places where `map2` substitutes elements of the input vectors, with `.x` functioning as a placeholder for elements of the first input vector `title`, and `.y` functioning as a placeholder for the elements of the second input vector `frm`.
+
+Note that the plots rendered by `map2` are assigned to the object `med_plots`, so that the plots will print when the code is sourced.
+```{r plot_model_med, echo=10:13, eval=FALSE}
+```
+`ggplot` takes as input the table of imputed medians, lo_SD, hi_SD `norm_build_med_hilo_sum`. It generates a scatterplot `geom_point` of age group on the x-axis and median on the y-axis `aes(x = group, y = median)`. (Note: some lines/arguments of the `ggplot` call were documented earlier in this Notebook, and will not be repeated here.)
+```{r plot_model_med, echo=14:15, eval=FALSE}
+```
+Substitution for `.x` from the `title` vector takes place in the following line of code, which uses `paste0` to concatenate string elements to create a `title` for each of the three plots.
+```{r plot_model_med, echo=27, eval=FALSE}
+```
+`ggplot2` allows the creation of layered plots. In the current instance, `geom_point()` created the base layer of a scatterplot, `labs` added a layer of labels, and now `geom_smooth()` will be used to layer on a regression line. (`+` is used to add an additional layer). `method` specifies the smoothing or modeling approach (in this case `lm` for linear model). `se = FALSE` indicates that no error bars will be shown on the regression line. `formula = .y` designates the regression equation to be used; here `.y` is a placeholder for the polynomial formulas contained in `frm`, which will be substituted as `map2` iterates.
+```{r plot_model_med, echo=31:35, eval=FALSE}
+```
+The final layer is specified by `ggpmisc::stat_poly_eq` which prints the corresponding regression equation and fit statistic on each plot, yielding three complete plots that can be used to compare the fits of 1st-, 2nd- and 3rd-order polynomial models. `map2` subtitutes the model formulas for `.y` in `formula = .y`. `eq.with.lhs` designates the string that prints to form the LHS of the regression equation. `aes` creates a `label` that prints to serve as the RHS of the regression equation: `paste` creates the `label` string by concatenating two string elements: the equation for the fitted polynomial `..eq.label..`, and the R^2^ for the fitted polynomial `..rr.label..` (`sep` designates the sequence of characters used to separate these two elements within the parsed string). `parse = TRUE` converts the label text into an expression (which R can perform actions on).
+```{r plot_model_med, echo=36:41, eval=FALSE}
+```
+Explicit `print` command ensures that plots will print when code is executed from source.
+```{r plot_model_med, echo=43, eval=FALSE}
+```
+
+<br>
+
+#### Generate smoothed (estimated) medians for three linear models
+
+As noted in the previous section, the norming process continues with the choice of models to smooth out the inter-age group variability in the imputed medians. In the smoothing process, `group` is used to predict (estimate) the smoothed values for the imputed medians. The regression coefficients from the selected linear model are used to generate the smoothed values for each age group. `group` is used as a linear, equal-interval proxy for the ordinal sequence of `agestrat` labels. Somewhat counterintuitively, the imputed values of median are _not_ used to estimate the smoothed values of those same variables. Using `group` as the independent variable in the linear models provides the desired smoothed values.
+
+###### COMMENTED CODE CHUNKS
+The script contains three named functions (`model_median_1st`, `model_median_2nd`, `model_median_3rd`) that return vectors holding estimated (smoothed) medians for the 1st-, 2nd-, and 3rd-order polynomial formulas. Because the three functions are analogous, only the 3rd-order function is documented in detail.
+
+`model_median_3rd` is a function whose body contains two operations. The first operation is the estimation of the linear model using `lm`. The first argument of `lm` specifies the terms of the 3rd-order polynomial formula, in which `group` is used to predict `median`. The second argument of `lm`, `data =`, specifies that the input values for model estimation are taken from the summary table `norm_build_med_hilo_sum` created by upstream code. The output of `lm` is piped into `assign`, whose first argument specifies a named object `model_median` to hold the model ouput. The second argument of `assign`,  `.`, specifies that the piped input will be assigned to `model_median`, and the third argument `envir = .GlobalEnv` specifies that `model_median` will be available in the global environment, where it can be processed in downstream functions.
+
+The second operation of `model_median_3rd` creates a numerical vector `median_sm` that holds the smoothed (predicted) median values across the levels of `agestrat`. `moderndive::get_regression_points` extracts the regression coefficients from `model_median` and uses them to generate the smooted medians. The output of `get_regression_points` is a tibble in which one column `median_hat` contains the smoothed medians. This output is piped through `dplyr::pull` which extracts the medians column, which is assigned to `median_sm`.
+
+```{r plot_model_med, echo=55:58, eval=FALSE}
+```
+
+<br>
+
+#### Use interactive session to select median smoothing model
+
+Previous code plotted imputed medians vs. agestrats, and fit 1st-, 2nd-, and 3rd-order polynomial regression lines to the imputed medians. This code also created functions that generate the estimated (smoothed) medians associated with each of these models. 
+
+When sourced, the script generates the plots and prompts you to examine the plots and enter a choice for smoothing model at the console. The next set of snippets encodes a function that lists the model choices on the console and prompts you to select a model by entering its number. The smoothed medians associated with the selected model are thereby incorporated in all downstream code.
+
+This interactive session can only be executed from source by entering `command-shift-S`. The code cannot be run as an isolated block using `command-enter`; this mode of execution won't pause and wait for user input.
+
+###### COMMENTED CODE CHUNKS
+The function that enables this interactive session is designated `model_prompt_median`. `writeLines` prints user instructions for model selection to the console as a numbered list, using the escape character `\n` to insert line breaks in the printed text.
+```{r plot_model_med, echo=60:63, eval=FALSE}
+```
+`model_choice` is initialized as a numeric vector with placeholder value of 0. Within the function `model_prompt_median`, `model_choice` will hold the numerical value that the user enters when prompted by the console instructions. The value of `model_choice` controls the flow of logic within `model_prompt_median`; its value determines which of the three smoothed median estimation functions will be executed. Note that the assignment operator `<-` is used to initialize `model_choice`, rather than the `assign` function that was used in the bodies of the smoothed median estimation functions. The reason for this is that `model_choice` is a temporary variable that is not utilized outside of the body of this particular function. Thus, it does not need to be made available in the global environment. When `<-` is used within the body of a function, the object thereby created is avaiable _only_ in the local environment of that function. In this instance, we can get away with using `<-` because `model_choice` is not needed in the global environment.
+```{r plot_model_med, echo=64, eval=FALSE}
+```
+The selected smoothed median estimation function is called and executed within a `while` loop, which iterates as long as a compound logical condition is met (logical "or" `||`). This condition is specified by `is.na(model_choice) || (!(model_choice %in% 1:3)`, which tells the `while` loop to keep iterating as long as the value of `model_choice` is anything other than 1, 2, or 3 (i.e., the user enters a non-permitted value at the console). Thus, if the user enters an integer other than 1, 2, or 3, or any other keystroke(s), including `enter` without an entry, the loop will continue to iterate and control will _not_ be passed to downstream code. `is.na(model_choice)` is included in this compound condition because any keystroke other than 1, 2, or 3 is coerced to `NA` within this function. Thus, the loop keeps iterating if the function returns `NA`.
+```{r plot_model_med, echo=65, eval=FALSE}
+```
+Within the `while` loop, `model_choice` is respecified to read user input from the console. `readline` allows the specification of a prompt at the console, and reads user input, which is then assigned to `model_choice`. Wrapping `readline` in `suppressWarnings` keeps the printed text on the console clean and readable.
+```{r plot_model_med, echo=66:67, eval=FALSE}
+```
+`if`-`else` statements control the flow of operations within the loop. The first `if` statement specifies that if `model_choice` is `NA` (i.e., the user enters a non-permitted keystroke(s) at the console), `writeLines` prints a reminder to enter a permitted keystroke, and then control returns to the beginning of the loop, where `readlines` again prompts the user to enter a model choice.
+```{r plot_model_med, echo=68:69, eval=FALSE}
+```
+Next comes a nested logical flow that is subsumed under `else`. When control enters the nested flow, the logical condition is that `model_choice` is _not_ `NA`. The nested `if`-`else` statements control what happens when the user enters a permitted choice (i.e., the value of `model_choice` is 1, 2, or 3). Under each of these three conditions (specified by sequential `if`-`else if`-`else if` commands), the smoothed median function associated with a particular value of `model_choice` is called, followed by `break` which causes control to exit the loop and continue into downstream code. Thus, the `model_median_prompt` function prompts the user to select a model at the console, repeats the prompt when a non-permitted choice is entered, and ultimately executes one of three smoothed median estimation functions and makes the output of that function available to downstream code.
+```{r plot_model_med, echo=70:79, eval=FALSE}
+```
+A final `else` condition is triggered by any user input not subsumed under the prior logical conditions. It reprompts the user, and returns control to the beginning of the loop. As noted above, the loop will only stop running if the user enters 1, 2, or 3.
+```{r plot_model_med, echo=80:81, eval=FALSE}
+```
+`model_prompt_median` is called with empty parentheses `()` because it takes no arguments. The function simply executes the code within its body, it does not depend on any input values specified in the function call.
+```{r plot_model_med, echo=86, eval=FALSE}
+```
+
+<br>
+
+#### Estimate smoothed lo_SDs, hi_SDs
+
+The code for estimating smoothed values for the lo_SDs and hi_SDs is analogous to that detailed above for the smoothed medians. The operations flow from plotting the imputed values with lines for 1st-order polynomial and mean-subsitution smoothing models, to initializing functions that will smooth the SDs based on these two models, to using an interactive session to select the smoothing models for the SDs. This process is completed first for the lo_SDs, and then for the hi_SDs. This section of code concludes by generating the summary table that is used in downstream norming processes, and removing unneeded objects from the global environment.
+
+The code is only documented in detail where it differs from previous code.
+
+###### VALID CODE TO RUN
+```{r plot_model_SDs, eval=FALSE}
+lo_SD_1st_plot <-
+  ggplot(norm_build_med_hilo_sum, aes(x = group, y = lo_SD)) +
+  geom_point(
+    col = 'red',
+    fill = 'red',
+    alpha = .5,
+    size = 3,
+    shape = 23
+  ) +
+  labs(x = 'age group'
+       ,
+       y = "lo_SD"
+       ,
+       title = 'lo_SD 1st order polynomial') +
+  scale_x_continuous(breaks = seq(1, 27, 1), labels = agestrat) +
+  scale_y_continuous(breaks = seq(0, 10, 1)) +
+  geom_smooth(method = 'lm',
+              se = FALSE,
+              formula = y ~ x) +
+  stat_poly_eq(
+    formula = y ~ x,
+    eq.with.lhs = 'italic(hat(y))~`=`~',
+    aes(label = paste(..eq.label.., ..rr.label.., sep = '*plain(\',\')~')),
+    parse = TRUE
+  )
+
+mean_lo_SD <- round(mean(norm_build_med_hilo_sum$lo_SD), 2)
+lo_SD_mean_plot <-
+  ggplot(norm_build_med_hilo_sum, aes(x = group, y = lo_SD)) +
+  geom_point(
+    col = 'red',
+    fill = 'red',
+    alpha = .5,
+    size = 3,
+    shape = 23
+  ) +
+  labs(x = 'age group'
+       ,
+       y = 'lo_SD'
+       ,
+       title = 'lo_SD mean substitution') +
+  scale_x_continuous(breaks = seq(1, 27, 1), labels = agestrat) +
+  scale_y_continuous(breaks = seq(0, 10, 1)) +
+  geom_hline(yintercept = mean_lo_SD) +
+  geom_label(aes(5, mean_lo_SD, label = paste0("Mean lo_SD = ", mean_lo_SD)))
+
+print(lo_SD_1st_plot)
+print(lo_SD_mean_plot)
+
+model_lo_SD_1st <- function() {
+  lm(lo_SD ~ group, data = norm_build_med_hilo_sum) %>% assign('model_lo_SD', ., envir = .GlobalEnv)
+  get_regression_points(model_lo_SD) %>% pull(lo_SD_hat) %>% assign('lo_SD_sm', ., envir = .GlobalEnv)
+}
+
+model_lo_SD_mean <- function() {
+  norm_build_med_hilo_sum %>% mutate(mean_lo_SD = mean_lo_SD) %>% pull(mean_lo_SD) %>% assign('lo_SD_sm', ., envir = .GlobalEnv)
+}
+
+model_prompt_lo_SD <- function() {
+  writeLines(
+    "\nExamine plots and choose smoothing model for lo_SDs:\n\n1: First-order polynomial: y = ax + b\n2: Mean substitution: y= mean(x)\n"
+  )
+  model_choice <- as.numeric(0)
+  while (is.na(model_choice) || (!(model_choice %in% 1:2))) {
+    model_choice <-
+      suppressWarnings(as.numeric(readline(prompt = "Enter choice: ")))
+    if (is.na(model_choice)) {
+      writeLines("Please enter 1 or 2\n")
+    } else {
+      if (model_choice == 1) {
+        model_lo_SD_1st()
+        break
+      } else if (model_choice == 2) {
+        model_lo_SD_mean()
+        break
+      } else {
+        writeLines("Please enter 1 or 2\n")
+      }
+    }
+  }
+}
+model_prompt_lo_SD()
+
+hi_SD_1st_plot <-
+  ggplot(norm_build_med_hilo_sum, aes(x = group, y = hi_SD)) +
+  geom_point(
+    col = 'red',
+    fill = 'red',
+    alpha = .5,
+    size = 3,
+    shape = 23
+  ) +
+  labs(x = 'age group'
+       ,
+       y = "hi_SD"
+       ,
+       title = 'hi_SD 1st order polynomial') +
+  scale_x_continuous(breaks = seq(1, 27, 1), labels = agestrat) +
+  scale_y_continuous(breaks = seq(0, 10, 1)) +
+  geom_smooth(method = 'lm',
+              se = FALSE,
+              formula = y ~ x) +
+  stat_poly_eq(
+    formula = y ~ x,
+    eq.with.lhs = 'italic(hat(y))~`=`~',
+    aes(label = paste(..eq.label.., ..rr.label.., sep = '*plain(\',\')~')),
+    parse = TRUE
+  )
+
+mean_hi_SD <- round(mean(norm_build_med_hilo_sum$hi_SD), 2)
+hi_SD_mean_plot <-
+  ggplot(norm_build_med_hilo_sum, aes(x = group, y = hi_SD)) +
+  geom_point(
+    col = 'red',
+    fill = 'red',
+    alpha = .5,
+    size = 3,
+    shape = 23
+  ) +
+  labs(x = 'age group'
+       ,
+       y = 'hi_SD'
+       ,
+       title = 'hi_SD mean substitution') +
+  scale_x_continuous(breaks = seq(1, 27, 1), labels = agestrat) +
+  scale_y_continuous(breaks = seq(0, 10, 1)) +
+  geom_hline(yintercept = mean_hi_SD) +
+  geom_label(aes(5, mean_hi_SD, label = paste0("Mean hi_SD = ", mean_hi_SD)))
+
+print(hi_SD_1st_plot)
+print(hi_SD_mean_plot)
+
+model_hi_SD_1st <- function() {
+  lm(hi_SD ~ group, data = norm_build_med_hilo_sum) %>% assign('model_hi_SD', ., envir = .GlobalEnv)
+  get_regression_points(model_hi_SD) %>% pull(hi_SD_hat) %>% assign('hi_SD_sm', ., envir = .GlobalEnv)
+}
+
+model_hi_SD_mean <- function() {
+  norm_build_med_hilo_sum %>% mutate(mean_hi_SD = mean_hi_SD) %>% pull(mean_hi_SD) %>% assign('hi_SD_sm', ., envir = .GlobalEnv)
+}
+
+model_prompt_hi_SD <- function() {
+  writeLines(
+    "\nExamine plots and choose smoothing model for hi_SDs:\n\n1: First-order polynomial: y = ax + b\n2: Mean substitution: y= mean(x)\n"
+  )
+  model_choice <- as.numeric(0)
+  while (is.na(model_choice) || (!(model_choice %in% 1:2))) {
+    model_choice <-
+      suppressWarnings(as.numeric(readline(prompt = "Enter choice: ")))
+    if (is.na(model_choice)) {
+      writeLines("Please enter 1 or 2\n")
+    } else {
+      if (model_choice == 1) {
+        model_hi_SD_1st()
+        break
+      } else if (model_choice == 2) {
+        model_hi_SD_mean()
+        break
+      } else {
+        writeLines("Please enter 1 or 2\n")
+      }
+    }
+  }
+}
+model_prompt_hi_SD()
+
+smooth_med_SD <-
+  cbind(norm_build_med_hilo_sum, median_sm, lo_SD_sm, hi_SD_sm) %>% dplyr::select(-(lo1:hi2)) %>%
+  mutate(ES_sm = round((median_sm - lag(median_sm)) / ((
+    lo_SD_sm + lag(lo_SD_sm) + hi_SD_sm + lag(hi_SD_sm)
+  ) / 4), 3))
+
+rm(list = ls()[!ls() %in% c('smooth_med_SD')])
+```
+
+
+
+
+
+
+
+###### COMMENTED CODE CHUNKS
+
+The mean-subsitution model smooths the SDs by substituting their mean for every imputed value. The lo_SD mean is generated by the following code (taking the mean of the column of imputed lo_SD values, specified by `norm_build_med_hilo_sum$lo_SD`). The value is assigned to `mean_lo_SD`, a numerical vector of length 1.
+```{r plot_model_SDs, echo=27, eval=FALSE}
+```
+
+The next two lines are part of the `ggplot` call to add a horizontal line to the mean-substitution plot. That line is layered on by `geom_hline`, which draws a horizontal line at the value of `mean_lo_SD` using the `yintercept` argument. `geom_label` applies a label to the line with the value of the mean (the first argument of `aes`, 5, refers to the position of the label relative to the line).
+```{r plot_model_SDs, echo=44:45, eval=FALSE}
+```
+
+The next snippet creates the output table `smooth_med_SD` used in the next stage of the norming process. `base::cbind` joins columns of equal length into a data frame, in this case joining the input table `norm_build_med_hilo_sum` to the new columns of smoothed values: `median_sm`, `lo_SD_sm`, and `hi_SD_sm`. This combined table is piped through `dplyr::select` to remove unneeded columns, and then through `dplyr::mutate`, to create a colmn of effect sizes for the smoothed medians. In the effect size formula, note the use of `lag` to bring in values from the preceeding row.
+
+```{r plot_model_SDs, echo=167:171, eval=FALSE}
+```
+

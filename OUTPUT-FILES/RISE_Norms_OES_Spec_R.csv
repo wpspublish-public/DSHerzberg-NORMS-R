@@ -1,0 +1,537 @@
+Form,Scale,Raw,TScore,Percentile,CI90,CI95,descrange
+Parent,BAG,0,"NA","NA","NA","NA",Low-Risk
+Parent,BAG,1,"NA","NA","NA","NA",Low-Risk
+Parent,BAG,2,"NA","NA","NA","NA",Low-Risk
+Parent,BAG,3,"NA","NA","NA","NA",Low-Risk
+Parent,BAG,4,"NA","NA","NA","NA",Low-Risk
+Parent,BAG,5,"NA","NA","NA","NA",Low-Risk
+Parent,BAG,6,"NA","NA","NA","NA",Low-Risk
+Parent,BAG,7,"NA","NA","NA","NA",Low-Risk
+Parent,BAG,8,"NA","NA","NA","NA",High-Risk
+Parent,BAG,9,"NA","NA","NA","NA",High-Risk
+Parent,BAG,10,"NA","NA","NA","NA",High-Risk
+Parent,BAG,11,"NA","NA","NA","NA",High-Risk
+Parent,BAG,12,"NA","NA","NA","NA",High-Risk
+Parent,BAG,13,"NA","NA","NA","NA",High-Risk
+Parent,BAG,14,"NA","NA","NA","NA",High-Risk
+Parent,BAG,15,"NA","NA","NA","NA",High-Risk
+Parent,BAG,16,"NA","NA","NA","NA",High-Risk
+Parent,BAG,17,"NA","NA","NA","NA",High-Risk
+Parent,BAG,18,"NA","NA","NA","NA",High-Risk
+Parent,BAG,19,"NA","NA","NA","NA",High-Risk
+Parent,BAG,20,"NA","NA","NA","NA",High-Risk
+Parent,BAG,21,"NA","NA","NA","NA",High-Risk
+Parent,BAG,22,"NA","NA","NA","NA",High-Risk
+Parent,BAG,23,"NA","NA","NA","NA",High-Risk
+Parent,BAG,24,"NA","NA","NA","NA",High-Risk
+Parent,BAG,25,"NA","NA","NA","NA",High-Risk
+Parent,BAG,26,"NA","NA","NA","NA",High-Risk
+Parent,BAG,27,"NA","NA","NA","NA",High-Risk
+Parent,BAG,28,"NA","NA","NA","NA",High-Risk
+Parent,BAG,29,"NA","NA","NA","NA",High-Risk
+Parent,BAG,30,"NA","NA","NA","NA",High-Risk
+Parent,BAG,31,"NA","NA","NA","NA",High-Risk
+Parent,BAG,32,"NA","NA","NA","NA",High-Risk
+Parent,BAG,33,"NA","NA","NA","NA",High-Risk
+Parent,BAG,34,"NA","NA","NA","NA",High-Risk
+Parent,BAG,35,"NA","NA","NA","NA",High-Risk
+Parent,BAG,36,"NA","NA","NA","NA",High-Risk
+Parent,BAG,37,"NA","NA","NA","NA",High-Risk
+Parent,BAG,38,"NA","NA","NA","NA",High-Risk
+Parent,BAG,39,"NA","NA","NA","NA",High-Risk
+Parent,BAG,40,"NA","NA","NA","NA",High-Risk
+Parent,BAG,41,"NA","NA","NA","NA",High-Risk
+Parent,BAG,42,"NA","NA","NA","NA",High-Risk
+Parent,BAG,43,"NA","NA","NA","NA",High-Risk
+Parent,BAG,44,"NA","NA","NA","NA",High-Risk
+Parent,BAG,45,"NA","NA","NA","NA",High-Risk
+Parent,DEL,0,"NA","NA","NA","NA",Low-Risk
+Parent,DEL,1,"NA","NA","NA","NA",Low-Risk
+Parent,DEL,2,"NA","NA","NA","NA",Low-Risk
+Parent,DEL,3,"NA","NA","NA","NA",Low-Risk
+Parent,DEL,4,"NA","NA","NA","NA",Low-Risk
+Parent,DEL,5,"NA","NA","NA","NA",High-Risk
+Parent,DEL,6,"NA","NA","NA","NA",High-Risk
+Parent,DEL,7,"NA","NA","NA","NA",High-Risk
+Parent,DEL,8,"NA","NA","NA","NA",High-Risk
+Parent,DEL,9,"NA","NA","NA","NA",High-Risk
+Parent,DEL,10,"NA","NA","NA","NA",High-Risk
+Parent,DEL,11,"NA","NA","NA","NA",High-Risk
+Parent,DEL,12,"NA","NA","NA","NA",High-Risk
+Parent,DEL,13,"NA","NA","NA","NA",High-Risk
+Parent,DEL,14,"NA","NA","NA","NA",High-Risk
+Parent,DEL,15,"NA","NA","NA","NA",High-Risk
+Parent,DEL,16,"NA","NA","NA","NA",High-Risk
+Parent,DEL,17,"NA","NA","NA","NA",High-Risk
+Parent,DEL,18,"NA","NA","NA","NA",High-Risk
+Parent,DEL,19,"NA","NA","NA","NA",High-Risk
+Parent,DEL,20,"NA","NA","NA","NA",High-Risk
+Parent,DEL,21,"NA","NA","NA","NA",High-Risk
+Parent,DEL,22,"NA","NA","NA","NA",High-Risk
+Parent,DEL,23,"NA","NA","NA","NA",High-Risk
+Parent,DEL,24,"NA","NA","NA","NA",High-Risk
+Parent,DEL,25,"NA","NA","NA","NA",High-Risk
+Parent,ESL,0,"NA","NA","NA","NA",Low-Risk
+Parent,ESL,1,"NA","NA","NA","NA",Low-Risk
+Parent,ESL,2,"NA","NA","NA","NA",Low-Risk
+Parent,ESL,3,"NA","NA","NA","NA",Low-Risk
+Parent,ESL,4,"NA","NA","NA","NA",Low-Risk
+Parent,ESL,5,"NA","NA","NA","NA",Low-Risk
+Parent,ESL,6,"NA","NA","NA","NA",Low-Risk
+Parent,ESL,7,"NA","NA","NA","NA",Low-Risk
+Parent,ESL,8,"NA","NA","NA","NA",Low-Risk
+Parent,ESL,9,"NA","NA","NA","NA",Low-Risk
+Parent,ESL,10,"NA","NA","NA","NA",Low-Risk
+Parent,ESL,11,"NA","NA","NA","NA",Low-Risk
+Parent,ESL,12,"NA","NA","NA","NA",High-Risk
+Parent,ESL,13,"NA","NA","NA","NA",High-Risk
+Parent,ESL,14,"NA","NA","NA","NA",High-Risk
+Parent,ESL,15,"NA","NA","NA","NA",High-Risk
+Parent,ESL,16,"NA","NA","NA","NA",High-Risk
+Parent,ESL,17,"NA","NA","NA","NA",High-Risk
+Parent,ESL,18,"NA","NA","NA","NA",High-Risk
+Parent,ESL,19,"NA","NA","NA","NA",High-Risk
+Parent,ESL,20,"NA","NA","NA","NA",High-Risk
+Parent,ESL,21,"NA","NA","NA","NA",High-Risk
+Parent,ESL,22,"NA","NA","NA","NA",High-Risk
+Parent,ESL,23,"NA","NA","NA","NA",High-Risk
+Parent,ESL,24,"NA","NA","NA","NA",High-Risk
+Parent,ESL,25,"NA","NA","NA","NA",High-Risk
+Parent,ESL,26,"NA","NA","NA","NA",High-Risk
+Parent,ESL,27,"NA","NA","NA","NA",High-Risk
+Parent,ESL,28,"NA","NA","NA","NA",High-Risk
+Parent,ESL,29,"NA","NA","NA","NA",High-Risk
+Parent,ESL,30,"NA","NA","NA","NA",High-Risk
+Parent,ESL,31,"NA","NA","NA","NA",High-Risk
+Parent,ESL,32,"NA","NA","NA","NA",High-Risk
+Parent,ESL,33,"NA","NA","NA","NA",High-Risk
+Parent,ESL,34,"NA","NA","NA","NA",High-Risk
+Parent,ESL,35,"NA","NA","NA","NA",High-Risk
+Parent,ESL,36,"NA","NA","NA","NA",High-Risk
+Parent,ESL,37,"NA","NA","NA","NA",High-Risk
+Parent,ESL,38,"NA","NA","NA","NA",High-Risk
+Parent,ESL,39,"NA","NA","NA","NA",High-Risk
+Parent,ESL,40,"NA","NA","NA","NA",High-Risk
+Parent,SXR,0,"NA","NA","NA","NA",Low-Risk
+Parent,SXR,1,"NA","NA","NA","NA",Low-Risk
+Parent,SXR,2,"NA","NA","NA","NA",Low-Risk
+Parent,SXR,3,"NA","NA","NA","NA",High-Risk
+Parent,SXR,4,"NA","NA","NA","NA",High-Risk
+Parent,SXR,5,"NA","NA","NA","NA",High-Risk
+Parent,SXR,6,"NA","NA","NA","NA",High-Risk
+Parent,SXR,7,"NA","NA","NA","NA",High-Risk
+Parent,SXR,8,"NA","NA","NA","NA",High-Risk
+Parent,SXR,9,"NA","NA","NA","NA",High-Risk
+Parent,SXR,10,"NA","NA","NA","NA",High-Risk
+Parent,SXR,11,"NA","NA","NA","NA",High-Risk
+Parent,SXR,12,"NA","NA","NA","NA",High-Risk
+Parent,SXR,13,"NA","NA","NA","NA",High-Risk
+Parent,SXR,14,"NA","NA","NA","NA",High-Risk
+Parent,SXR,15,"NA","NA","NA","NA",High-Risk
+Parent,SXR,16,"NA","NA","NA","NA",High-Risk
+Parent,SXR,17,"NA","NA","NA","NA",High-Risk
+Parent,SXR,18,"NA","NA","NA","NA",High-Risk
+Parent,SXR,19,"NA","NA","NA","NA",High-Risk
+Parent,SXR,20,"NA","NA","NA","NA",High-Risk
+Parent,SXR,21,"NA","NA","NA","NA",High-Risk
+Parent,SXR,22,"NA","NA","NA","NA",High-Risk
+Parent,SXR,23,"NA","NA","NA","NA",High-Risk
+Parent,SXR,24,"NA","NA","NA","NA",High-Risk
+Parent,SXR,25,"NA","NA","NA","NA",High-Risk
+Parent,SUB,0,"NA","NA","NA","NA",Low-Risk
+Parent,SUB,1,"NA","NA","NA","NA",Low-Risk
+Parent,SUB,2,"NA","NA","NA","NA",Low-Risk
+Parent,SUB,3,"NA","NA","NA","NA",Low-Risk
+Parent,SUB,4,"NA","NA","NA","NA",Low-Risk
+Parent,SUB,5,"NA","NA","NA","NA",High-Risk
+Parent,SUB,6,"NA","NA","NA","NA",High-Risk
+Parent,SUB,7,"NA","NA","NA","NA",High-Risk
+Parent,SUB,8,"NA","NA","NA","NA",High-Risk
+Parent,SUB,9,"NA","NA","NA","NA",High-Risk
+Parent,SUB,10,"NA","NA","NA","NA",High-Risk
+Parent,SUB,11,"NA","NA","NA","NA",High-Risk
+Parent,SUB,12,"NA","NA","NA","NA",High-Risk
+Parent,SUB,13,"NA","NA","NA","NA",High-Risk
+Parent,SUB,14,"NA","NA","NA","NA",High-Risk
+Parent,SUB,15,"NA","NA","NA","NA",High-Risk
+Parent,SUB,16,"NA","NA","NA","NA",High-Risk
+Parent,SUB,17,"NA","NA","NA","NA",High-Risk
+Parent,SUB,18,"NA","NA","NA","NA",High-Risk
+Parent,SUB,19,"NA","NA","NA","NA",High-Risk
+Parent,SUB,20,"NA","NA","NA","NA",High-Risk
+Parent,SUB,21,"NA","NA","NA","NA",High-Risk
+Parent,SUB,22,"NA","NA","NA","NA",High-Risk
+Parent,SUB,23,"NA","NA","NA","NA",High-Risk
+Parent,SUB,24,"NA","NA","NA","NA",High-Risk
+Parent,SUB,25,"NA","NA","NA","NA",High-Risk
+Parent,SUB,26,"NA","NA","NA","NA",High-Risk
+Parent,SUB,27,"NA","NA","NA","NA",High-Risk
+Parent,SUB,28,"NA","NA","NA","NA",High-Risk
+Parent,SUB,29,"NA","NA","NA","NA",High-Risk
+Parent,SUB,30,"NA","NA","NA","NA",High-Risk
+Parent,SUI,0,"NA","NA","NA","NA",Low-Risk
+Parent,SUI,1,"NA","NA","NA","NA",Low-Risk
+Parent,SUI,2,"NA","NA","NA","NA",Low-Risk
+Parent,SUI,3,"NA","NA","NA","NA",High-Risk
+Parent,SUI,4,"NA","NA","NA","NA",High-Risk
+Parent,SUI,5,"NA","NA","NA","NA",High-Risk
+Parent,SUI,6,"NA","NA","NA","NA",High-Risk
+Parent,SUI,7,"NA","NA","NA","NA",High-Risk
+Parent,SUI,8,"NA","NA","NA","NA",High-Risk
+Parent,SUI,9,"NA","NA","NA","NA",High-Risk
+Parent,SUI,10,"NA","NA","NA","NA",High-Risk
+Parent,SUI,11,"NA","NA","NA","NA",High-Risk
+Parent,SUI,12,"NA","NA","NA","NA",High-Risk
+Parent,SUI,13,"NA","NA","NA","NA",High-Risk
+Parent,SUI,14,"NA","NA","NA","NA",High-Risk
+Parent,SUI,15,"NA","NA","NA","NA",High-Risk
+Parent,SUI,16,"NA","NA","NA","NA",High-Risk
+Parent,SUI,17,"NA","NA","NA","NA",High-Risk
+Parent,SUI,18,"NA","NA","NA","NA",High-Risk
+Parent,SUI,19,"NA","NA","NA","NA",High-Risk
+Parent,SUI,20,"NA","NA","NA","NA",High-Risk
+Parent,SUI,21,"NA","NA","NA","NA",High-Risk
+Parent,SUI,22,"NA","NA","NA","NA",High-Risk
+Parent,SUI,23,"NA","NA","NA","NA",High-Risk
+Parent,SUI,24,"NA","NA","NA","NA",High-Risk
+Parent,SUI,25,"NA","NA","NA","NA",High-Risk
+Parent,SUI,26,"NA","NA","NA","NA",High-Risk
+Parent,SUI,27,"NA","NA","NA","NA",High-Risk
+Parent,SUI,28,"NA","NA","NA","NA",High-Risk
+Parent,SUI,29,"NA","NA","NA","NA",High-Risk
+Parent,SUI,30,"NA","NA","NA","NA",High-Risk
+Parent,SUI,31,"NA","NA","NA","NA",High-Risk
+Parent,SUI,32,"NA","NA","NA","NA",High-Risk
+Parent,SUI,33,"NA","NA","NA","NA",High-Risk
+Parent,SUI,34,"NA","NA","NA","NA",High-Risk
+Parent,SUI,35,"NA","NA","NA","NA",High-Risk
+Parent,INC,0,"NA","NA","NA","NA",Valid response style
+Parent,INC,1,"NA","NA","NA","NA",Valid response style
+Parent,INC,2,"NA","NA","NA","NA",Valid response style
+Parent,INC,3,"NA","NA","NA","NA",Valid response style
+Parent,INC,4,"NA","NA","NA","NA",Valid response style
+Parent,INC,5,"NA","NA","NA","NA",Valid response style
+Parent,INC,6,"NA","NA","NA","NA",Valid response style
+Parent,INC,7,"NA","NA","NA","NA",Valid response style
+Parent,INC,8,"NA","NA","NA","NA",Random response style
+Parent,INC,9,"NA","NA","NA","NA",Random response style
+Parent,INC,10,"NA","NA","NA","NA",Random response style
+Parent,INC,11,"NA","NA","NA","NA",Random response style
+Parent,INC,12,"NA","NA","NA","NA",Random response style
+Parent,INC,13,"NA","NA","NA","NA",Random response style
+Parent,INC,14,"NA","NA","NA","NA",Random response style
+Parent,INC,15,"NA","NA","NA","NA",Random response style
+Parent,INC,16,"NA","NA","NA","NA",Random response style
+Parent,INC,17,"NA","NA","NA","NA",Random response style
+Parent,INC,18,"NA","NA","NA","NA",Random response style
+Parent,INC,19,"NA","NA","NA","NA",Random response style
+Parent,INC,20,"NA","NA","NA","NA",Random response style
+Parent,INC,21,"NA","NA","NA","NA",Random response style
+Parent,INC,22,"NA","NA","NA","NA",Random response style
+Parent,INC,23,"NA","NA","NA","NA",Random response style
+Parent,INC,24,"NA","NA","NA","NA",Random response style
+Parent,INC,25,"NA","NA","NA","NA",Random response style
+Parent,INC,26,"NA","NA","NA","NA",Random response style
+Parent,INC,27,"NA","NA","NA","NA",Random response style
+Parent,INC,28,"NA","NA","NA","NA",Random response style
+Parent,INC,29,"NA","NA","NA","NA",Random response style
+Parent,INC,30,"NA","NA","NA","NA",Random response style
+Parent,IMP,0,"NA","NA","NA","NA",Negative impression response style
+Parent,IMP,1,"NA","NA","NA","NA",Negative impression response style
+Parent,IMP,2,"NA","NA","NA","NA",Negative impression response style
+Parent,IMP,3,"NA","NA","NA","NA",Negative impression response style
+Parent,IMP,4,"NA","NA","NA","NA",Negative impression response style
+Parent,IMP,5,"NA","NA","NA","NA",Negative impression response style
+Parent,IMP,6,"NA","NA","NA","NA",Negative impression response style
+Parent,IMP,7,"NA","NA","NA","NA",Negative impression response style
+Parent,IMP,8,"NA","NA","NA","NA",Negative impression response style
+Parent,IMP,9,"NA","NA","NA","NA",Negative impression response style
+Parent,IMP,10,"NA","NA","NA","NA",Negative impression response style
+Parent,IMP,11,"NA","NA","NA","NA",Negative impression response style
+Parent,IMP,12,"NA","NA","NA","NA",Negative impression response style
+Parent,IMP,13,"NA","NA","NA","NA",Negative impression response style
+Parent,IMP,14,"NA","NA","NA","NA",Negative impression response style
+Parent,IMP,15,"NA","NA","NA","NA",Valid response style
+Parent,IMP,16,"NA","NA","NA","NA",Valid response style
+Parent,IMP,17,"NA","NA","NA","NA",Valid response style
+Parent,IMP,18,"NA","NA","NA","NA",Valid response style
+Parent,IMP,19,"NA","NA","NA","NA",Valid response style
+Parent,IMP,20,"NA","NA","NA","NA",Valid response style
+Parent,IMP,21,"NA","NA","NA","NA",Valid response style
+Parent,IMP,22,"NA","NA","NA","NA",Valid response style
+Parent,IMP,23,"NA","NA","NA","NA",Valid response style
+Parent,IMP,24,"NA","NA","NA","NA",Valid response style
+Parent,IMP,25,"NA","NA","NA","NA",Valid response style
+Parent,IMP,26,"NA","NA","NA","NA",Valid response style
+Parent,IMP,27,"NA","NA","NA","NA",Valid response style
+Parent,IMP,28,"NA","NA","NA","NA",Positive impression response style
+Parent,IMP,29,"NA","NA","NA","NA",Positive impression response style
+Parent,IMP,30,"NA","NA","NA","NA",Positive impression response style
+Self,BAG,0,"NA","NA","NA","NA",Low-Risk
+Self,BAG,1,"NA","NA","NA","NA",Low-Risk
+Self,BAG,2,"NA","NA","NA","NA",Low-Risk
+Self,BAG,3,"NA","NA","NA","NA",Low-Risk
+Self,BAG,4,"NA","NA","NA","NA",Low-Risk
+Self,BAG,5,"NA","NA","NA","NA",Low-Risk
+Self,BAG,6,"NA","NA","NA","NA",Low-Risk
+Self,BAG,7,"NA","NA","NA","NA",Low-Risk
+Self,BAG,8,"NA","NA","NA","NA",Low-Risk
+Self,BAG,9,"NA","NA","NA","NA",High-Risk
+Self,BAG,10,"NA","NA","NA","NA",High-Risk
+Self,BAG,11,"NA","NA","NA","NA",High-Risk
+Self,BAG,12,"NA","NA","NA","NA",High-Risk
+Self,BAG,13,"NA","NA","NA","NA",High-Risk
+Self,BAG,14,"NA","NA","NA","NA",High-Risk
+Self,BAG,15,"NA","NA","NA","NA",High-Risk
+Self,BAG,16,"NA","NA","NA","NA",High-Risk
+Self,BAG,17,"NA","NA","NA","NA",High-Risk
+Self,BAG,18,"NA","NA","NA","NA",High-Risk
+Self,BAG,19,"NA","NA","NA","NA",High-Risk
+Self,BAG,20,"NA","NA","NA","NA",High-Risk
+Self,BAG,21,"NA","NA","NA","NA",High-Risk
+Self,BAG,22,"NA","NA","NA","NA",High-Risk
+Self,BAG,23,"NA","NA","NA","NA",High-Risk
+Self,BAG,24,"NA","NA","NA","NA",High-Risk
+Self,BAG,25,"NA","NA","NA","NA",High-Risk
+Self,BAG,26,"NA","NA","NA","NA",High-Risk
+Self,BAG,27,"NA","NA","NA","NA",High-Risk
+Self,BAG,28,"NA","NA","NA","NA",High-Risk
+Self,BAG,29,"NA","NA","NA","NA",High-Risk
+Self,BAG,30,"NA","NA","NA","NA",High-Risk
+Self,BAG,31,"NA","NA","NA","NA",High-Risk
+Self,BAG,32,"NA","NA","NA","NA",High-Risk
+Self,BAG,33,"NA","NA","NA","NA",High-Risk
+Self,BAG,34,"NA","NA","NA","NA",High-Risk
+Self,BAG,35,"NA","NA","NA","NA",High-Risk
+Self,BAG,36,"NA","NA","NA","NA",High-Risk
+Self,BAG,37,"NA","NA","NA","NA",High-Risk
+Self,BAG,38,"NA","NA","NA","NA",High-Risk
+Self,BAG,39,"NA","NA","NA","NA",High-Risk
+Self,BAG,40,"NA","NA","NA","NA",High-Risk
+Self,BAG,41,"NA","NA","NA","NA",High-Risk
+Self,BAG,42,"NA","NA","NA","NA",High-Risk
+Self,BAG,43,"NA","NA","NA","NA",High-Risk
+Self,BAG,44,"NA","NA","NA","NA",High-Risk
+Self,BAG,45,"NA","NA","NA","NA",High-Risk
+Self,DEL,0,"NA","NA","NA","NA",Low-Risk
+Self,DEL,1,"NA","NA","NA","NA",Low-Risk
+Self,DEL,2,"NA","NA","NA","NA",Low-Risk
+Self,DEL,3,"NA","NA","NA","NA",Low-Risk
+Self,DEL,4,"NA","NA","NA","NA",Low-Risk
+Self,DEL,5,"NA","NA","NA","NA",High-Risk
+Self,DEL,6,"NA","NA","NA","NA",High-Risk
+Self,DEL,7,"NA","NA","NA","NA",High-Risk
+Self,DEL,8,"NA","NA","NA","NA",High-Risk
+Self,DEL,9,"NA","NA","NA","NA",High-Risk
+Self,DEL,10,"NA","NA","NA","NA",High-Risk
+Self,DEL,11,"NA","NA","NA","NA",High-Risk
+Self,DEL,12,"NA","NA","NA","NA",High-Risk
+Self,DEL,13,"NA","NA","NA","NA",High-Risk
+Self,DEL,14,"NA","NA","NA","NA",High-Risk
+Self,DEL,15,"NA","NA","NA","NA",High-Risk
+Self,DEL,16,"NA","NA","NA","NA",High-Risk
+Self,DEL,17,"NA","NA","NA","NA",High-Risk
+Self,DEL,18,"NA","NA","NA","NA",High-Risk
+Self,DEL,19,"NA","NA","NA","NA",High-Risk
+Self,DEL,20,"NA","NA","NA","NA",High-Risk
+Self,DEL,21,"NA","NA","NA","NA",High-Risk
+Self,DEL,22,"NA","NA","NA","NA",High-Risk
+Self,DEL,23,"NA","NA","NA","NA",High-Risk
+Self,DEL,24,"NA","NA","NA","NA",High-Risk
+Self,DEL,25,"NA","NA","NA","NA",High-Risk
+Self,ESL,0,"NA","NA","NA","NA",Low-Risk
+Self,ESL,1,"NA","NA","NA","NA",Low-Risk
+Self,ESL,2,"NA","NA","NA","NA",Low-Risk
+Self,ESL,3,"NA","NA","NA","NA",Low-Risk
+Self,ESL,4,"NA","NA","NA","NA",Low-Risk
+Self,ESL,5,"NA","NA","NA","NA",Low-Risk
+Self,ESL,6,"NA","NA","NA","NA",Low-Risk
+Self,ESL,7,"NA","NA","NA","NA",Low-Risk
+Self,ESL,8,"NA","NA","NA","NA",Low-Risk
+Self,ESL,9,"NA","NA","NA","NA",Low-Risk
+Self,ESL,10,"NA","NA","NA","NA",Low-Risk
+Self,ESL,11,"NA","NA","NA","NA",Low-Risk
+Self,ESL,12,"NA","NA","NA","NA",Low-Risk
+Self,ESL,13,"NA","NA","NA","NA",Low-Risk
+Self,ESL,14,"NA","NA","NA","NA",Low-Risk
+Self,ESL,15,"NA","NA","NA","NA",High-Risk
+Self,ESL,16,"NA","NA","NA","NA",High-Risk
+Self,ESL,17,"NA","NA","NA","NA",High-Risk
+Self,ESL,18,"NA","NA","NA","NA",High-Risk
+Self,ESL,19,"NA","NA","NA","NA",High-Risk
+Self,ESL,20,"NA","NA","NA","NA",High-Risk
+Self,ESL,21,"NA","NA","NA","NA",High-Risk
+Self,ESL,22,"NA","NA","NA","NA",High-Risk
+Self,ESL,23,"NA","NA","NA","NA",High-Risk
+Self,ESL,24,"NA","NA","NA","NA",High-Risk
+Self,ESL,25,"NA","NA","NA","NA",High-Risk
+Self,ESL,26,"NA","NA","NA","NA",High-Risk
+Self,ESL,27,"NA","NA","NA","NA",High-Risk
+Self,ESL,28,"NA","NA","NA","NA",High-Risk
+Self,ESL,29,"NA","NA","NA","NA",High-Risk
+Self,ESL,30,"NA","NA","NA","NA",High-Risk
+Self,ESL,31,"NA","NA","NA","NA",High-Risk
+Self,ESL,32,"NA","NA","NA","NA",High-Risk
+Self,ESL,33,"NA","NA","NA","NA",High-Risk
+Self,ESL,34,"NA","NA","NA","NA",High-Risk
+Self,ESL,35,"NA","NA","NA","NA",High-Risk
+Self,ESL,36,"NA","NA","NA","NA",High-Risk
+Self,ESL,37,"NA","NA","NA","NA",High-Risk
+Self,ESL,38,"NA","NA","NA","NA",High-Risk
+Self,ESL,39,"NA","NA","NA","NA",High-Risk
+Self,ESL,40,"NA","NA","NA","NA",High-Risk
+Self,SXR,0,"NA","NA","NA","NA",Low-Risk
+Self,SXR,1,"NA","NA","NA","NA",Low-Risk
+Self,SXR,2,"NA","NA","NA","NA",Low-Risk
+Self,SXR,3,"NA","NA","NA","NA",Low-Risk
+Self,SXR,4,"NA","NA","NA","NA",High-Risk
+Self,SXR,5,"NA","NA","NA","NA",High-Risk
+Self,SXR,6,"NA","NA","NA","NA",High-Risk
+Self,SXR,7,"NA","NA","NA","NA",High-Risk
+Self,SXR,8,"NA","NA","NA","NA",High-Risk
+Self,SXR,9,"NA","NA","NA","NA",High-Risk
+Self,SXR,10,"NA","NA","NA","NA",High-Risk
+Self,SXR,11,"NA","NA","NA","NA",High-Risk
+Self,SXR,12,"NA","NA","NA","NA",High-Risk
+Self,SXR,13,"NA","NA","NA","NA",High-Risk
+Self,SXR,14,"NA","NA","NA","NA",High-Risk
+Self,SXR,15,"NA","NA","NA","NA",High-Risk
+Self,SXR,16,"NA","NA","NA","NA",High-Risk
+Self,SXR,17,"NA","NA","NA","NA",High-Risk
+Self,SXR,18,"NA","NA","NA","NA",High-Risk
+Self,SXR,19,"NA","NA","NA","NA",High-Risk
+Self,SXR,20,"NA","NA","NA","NA",High-Risk
+Self,SXR,21,"NA","NA","NA","NA",High-Risk
+Self,SXR,22,"NA","NA","NA","NA",High-Risk
+Self,SXR,23,"NA","NA","NA","NA",High-Risk
+Self,SXR,24,"NA","NA","NA","NA",High-Risk
+Self,SXR,25,"NA","NA","NA","NA",High-Risk
+Self,SUB,0,"NA","NA","NA","NA",Low-Risk
+Self,SUB,1,"NA","NA","NA","NA",Low-Risk
+Self,SUB,2,"NA","NA","NA","NA",Low-Risk
+Self,SUB,3,"NA","NA","NA","NA",Low-Risk
+Self,SUB,4,"NA","NA","NA","NA",Low-Risk
+Self,SUB,5,"NA","NA","NA","NA",Low-Risk
+Self,SUB,6,"NA","NA","NA","NA",High-Risk
+Self,SUB,7,"NA","NA","NA","NA",High-Risk
+Self,SUB,8,"NA","NA","NA","NA",High-Risk
+Self,SUB,9,"NA","NA","NA","NA",High-Risk
+Self,SUB,10,"NA","NA","NA","NA",High-Risk
+Self,SUB,11,"NA","NA","NA","NA",High-Risk
+Self,SUB,12,"NA","NA","NA","NA",High-Risk
+Self,SUB,13,"NA","NA","NA","NA",High-Risk
+Self,SUB,14,"NA","NA","NA","NA",High-Risk
+Self,SUB,15,"NA","NA","NA","NA",High-Risk
+Self,SUB,16,"NA","NA","NA","NA",High-Risk
+Self,SUB,17,"NA","NA","NA","NA",High-Risk
+Self,SUB,18,"NA","NA","NA","NA",High-Risk
+Self,SUB,19,"NA","NA","NA","NA",High-Risk
+Self,SUB,20,"NA","NA","NA","NA",High-Risk
+Self,SUB,21,"NA","NA","NA","NA",High-Risk
+Self,SUB,22,"NA","NA","NA","NA",High-Risk
+Self,SUB,23,"NA","NA","NA","NA",High-Risk
+Self,SUB,24,"NA","NA","NA","NA",High-Risk
+Self,SUB,25,"NA","NA","NA","NA",High-Risk
+Self,SUB,26,"NA","NA","NA","NA",High-Risk
+Self,SUB,27,"NA","NA","NA","NA",High-Risk
+Self,SUB,28,"NA","NA","NA","NA",High-Risk
+Self,SUB,29,"NA","NA","NA","NA",High-Risk
+Self,SUB,30,"NA","NA","NA","NA",High-Risk
+Self,SUI,0,"NA","NA","NA","NA",Low-Risk
+Self,SUI,1,"NA","NA","NA","NA",Low-Risk
+Self,SUI,2,"NA","NA","NA","NA",Low-Risk
+Self,SUI,3,"NA","NA","NA","NA",Low-Risk
+Self,SUI,4,"NA","NA","NA","NA",High-Risk
+Self,SUI,5,"NA","NA","NA","NA",High-Risk
+Self,SUI,6,"NA","NA","NA","NA",High-Risk
+Self,SUI,7,"NA","NA","NA","NA",High-Risk
+Self,SUI,8,"NA","NA","NA","NA",High-Risk
+Self,SUI,9,"NA","NA","NA","NA",High-Risk
+Self,SUI,10,"NA","NA","NA","NA",High-Risk
+Self,SUI,11,"NA","NA","NA","NA",High-Risk
+Self,SUI,12,"NA","NA","NA","NA",High-Risk
+Self,SUI,13,"NA","NA","NA","NA",High-Risk
+Self,SUI,14,"NA","NA","NA","NA",High-Risk
+Self,SUI,15,"NA","NA","NA","NA",High-Risk
+Self,SUI,16,"NA","NA","NA","NA",High-Risk
+Self,SUI,17,"NA","NA","NA","NA",High-Risk
+Self,SUI,18,"NA","NA","NA","NA",High-Risk
+Self,SUI,19,"NA","NA","NA","NA",High-Risk
+Self,SUI,20,"NA","NA","NA","NA",High-Risk
+Self,SUI,21,"NA","NA","NA","NA",High-Risk
+Self,SUI,22,"NA","NA","NA","NA",High-Risk
+Self,SUI,23,"NA","NA","NA","NA",High-Risk
+Self,SUI,24,"NA","NA","NA","NA",High-Risk
+Self,SUI,25,"NA","NA","NA","NA",High-Risk
+Self,SUI,26,"NA","NA","NA","NA",High-Risk
+Self,SUI,27,"NA","NA","NA","NA",High-Risk
+Self,SUI,28,"NA","NA","NA","NA",High-Risk
+Self,SUI,29,"NA","NA","NA","NA",High-Risk
+Self,SUI,30,"NA","NA","NA","NA",High-Risk
+Self,SUI,31,"NA","NA","NA","NA",High-Risk
+Self,SUI,32,"NA","NA","NA","NA",High-Risk
+Self,SUI,33,"NA","NA","NA","NA",High-Risk
+Self,SUI,34,"NA","NA","NA","NA",High-Risk
+Self,SUI,35,"NA","NA","NA","NA",High-Risk
+Self,INC,0,"NA","NA","NA","NA",Valid response style
+Self,INC,1,"NA","NA","NA","NA",Valid response style
+Self,INC,2,"NA","NA","NA","NA",Valid response style
+Self,INC,3,"NA","NA","NA","NA",Valid response style
+Self,INC,4,"NA","NA","NA","NA",Valid response style
+Self,INC,5,"NA","NA","NA","NA",Valid response style
+Self,INC,6,"NA","NA","NA","NA",Valid response style
+Self,INC,7,"NA","NA","NA","NA",Valid response style
+Self,INC,8,"NA","NA","NA","NA",Valid response style
+Self,INC,9,"NA","NA","NA","NA",Valid response style
+Self,INC,10,"NA","NA","NA","NA",Random response style
+Self,INC,11,"NA","NA","NA","NA",Random response style
+Self,INC,12,"NA","NA","NA","NA",Random response style
+Self,INC,13,"NA","NA","NA","NA",Random response style
+Self,INC,14,"NA","NA","NA","NA",Random response style
+Self,INC,15,"NA","NA","NA","NA",Random response style
+Self,INC,16,"NA","NA","NA","NA",Random response style
+Self,INC,17,"NA","NA","NA","NA",Random response style
+Self,INC,18,"NA","NA","NA","NA",Random response style
+Self,INC,19,"NA","NA","NA","NA",Random response style
+Self,INC,20,"NA","NA","NA","NA",Random response style
+Self,INC,21,"NA","NA","NA","NA",Random response style
+Self,INC,22,"NA","NA","NA","NA",Random response style
+Self,INC,23,"NA","NA","NA","NA",Random response style
+Self,INC,24,"NA","NA","NA","NA",Random response style
+Self,INC,25,"NA","NA","NA","NA",Random response style
+Self,INC,26,"NA","NA","NA","NA",Random response style
+Self,INC,27,"NA","NA","NA","NA",Random response style
+Self,INC,28,"NA","NA","NA","NA",Random response style
+Self,INC,29,"NA","NA","NA","NA",Random response style
+Self,INC,30,"NA","NA","NA","NA",Random response style
+Self,IMP,0,"NA","NA","NA","NA",Negative impression response style
+Self,IMP,1,"NA","NA","NA","NA",Negative impression response style
+Self,IMP,2,"NA","NA","NA","NA",Negative impression response style
+Self,IMP,3,"NA","NA","NA","NA",Negative impression response style
+Self,IMP,4,"NA","NA","NA","NA",Negative impression response style
+Self,IMP,5,"NA","NA","NA","NA",Negative impression response style
+Self,IMP,6,"NA","NA","NA","NA",Negative impression response style
+Self,IMP,7,"NA","NA","NA","NA",Negative impression response style
+Self,IMP,8,"NA","NA","NA","NA",Negative impression response style
+Self,IMP,9,"NA","NA","NA","NA",Negative impression response style
+Self,IMP,10,"NA","NA","NA","NA",Negative impression response style
+Self,IMP,11,"NA","NA","NA","NA",Negative impression response style
+Self,IMP,12,"NA","NA","NA","NA",Negative impression response style
+Self,IMP,13,"NA","NA","NA","NA",Negative impression response style
+Self,IMP,14,"NA","NA","NA","NA",Negative impression response style
+Self,IMP,15,"NA","NA","NA","NA",Valid response style
+Self,IMP,16,"NA","NA","NA","NA",Valid response style
+Self,IMP,17,"NA","NA","NA","NA",Valid response style
+Self,IMP,18,"NA","NA","NA","NA",Valid response style
+Self,IMP,19,"NA","NA","NA","NA",Valid response style
+Self,IMP,20,"NA","NA","NA","NA",Valid response style
+Self,IMP,21,"NA","NA","NA","NA",Valid response style
+Self,IMP,22,"NA","NA","NA","NA",Valid response style
+Self,IMP,23,"NA","NA","NA","NA",Valid response style
+Self,IMP,24,"NA","NA","NA","NA",Valid response style
+Self,IMP,25,"NA","NA","NA","NA",Valid response style
+Self,IMP,26,"NA","NA","NA","NA",Valid response style
+Self,IMP,27,"NA","NA","NA","NA",Valid response style
+Self,IMP,28,"NA","NA","NA","NA",Positive impression response style
+Self,IMP,29,"NA","NA","NA","NA",Positive impression response style
+Self,IMP,30,"NA","NA","NA","NA",Positive impression response style

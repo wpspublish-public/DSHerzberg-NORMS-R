@@ -1,0 +1,406 @@
+---
+title: "Using R in WPS R&D"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<br>
+
+#### HOW TO USE THIS DOCUMENT:
+This HTML document contains chunks of runnable code along with detailed analysis and documentation of the code and workflow. It can be opened in any web browser.
+
+The HTML narrative is organized into sections reflecting discrete topics and operations in the R workflow. Each section has two parts:
+
+1. `VALID CODE TO RUN`: this code can be copy-and-pasted into your working R script. All file paths are relative to your R project folder.
+2. `COMMENTED CODE CHUNKS`: these snippets provide the analysis and documentation of the code and workflow. The R code in these snippets is redundant with that in `VALID CODE TO RUN` section. Here, it serves merely to enhance the code documenatation, and is not meant to be run.
+
+<br>
+
+#### UTILIZING RStudio PROJECTS AND DIRECTORY PATHS:
+To keep your work organized, set up a project in RStudio, by clicking `File -> New Project`. You'll be asked to specify a working directory associated with the project. To facilitate running the code of this project easily, locate input files in a folder named `INPUT-FILES`, within the working directory associated with this project. Also, create a folder named `OUTPUT-FILES`, within the working directory associated with this project.
+
+<br>
+
+#### PACKAGES
+
+Packages contain the add-on features and functions that give R its power and versatility. To use the code in this notebook, install the packages named within `library()` in the next code section. In RStudio, click  `Tools -> Install Packages` and follow the menu instructions.
+
+Required packages need to be installed only once, but they must be loaded into R each time you run the script that makes use of the packages. Packages are loaded using `library`, as in the code section below:
+
+###### VALID CODE TO RUN
+```{r essential_packages, message=FALSE}
+library (reprex) # PREPARE REPRODUCIBLE EXAMPLE CODE FOR SHARING
+library (broom) # GIVES CLEANLY FORMATTED OUTPUT OF LINEAR REGRESSION
+library(pander) # RENDER R OBJECTS INTO PANDOC MARKDOWN WITH CLEAN FORMATTING
+library(zeallot) # %<-% CUSTOM ASSIGNMENT OPERATOR FOR UNPACKING VECTORS AND LISTS
+library(pipeR) # MORE PIPE TOOLS
+library(rlang) # ADDITIONAL TOOLS FOR TIDYVERSE FEATURES
+library(mise) # PROVIDES MISE () FUNCTION TO CLEAR CONSOLE AND ENVIRONMENT
+library(readxl) # READ .XLS, .XLSX
+library(haven) # READ .SAV
+library(lubridate) # PROCESSS DATES, DATE-TIMES
+library(hms) # PROCESS TIME-OF-DAY VALUES
+library(gdata) # VARIOUS DATA MANIPULATION FUNCTIONS
+library(magrittr) # PIPE OPERATORS
+library(glue) # ALTERNATIVE TO PASTE() FOR COMBINING DATA AND STRINGS
+library(tidyverse) # CORE TIDYVERSE: ggplot2, dplyr, tidyr, readr, purrr, tibble, stringr, forcats
+```
+To use the code in this notebook, the most important packages to install and load are `magrittr` and `tidyverse`. Certain sections of this notebook may require other packages on the list.Within code, functions can be called without loading the entire package by using the `::` operator (e.g., `dplyr::select())`.
+
+<br>
+
+#### COMBINE DATA SETS
+
+##### Stack tables with same variables; add rows but not columns
+
+###### R function:
+`dplyr::bind_rows`
+
+###### SPSS equivalent:
+`ADD FILES`  
+
+###### VALID CODE TO RUN
+```{r rbind, eval=FALSE}
+df <- tibble(id=1:12, mo=month.name)
+
+fun <- function(x) {
+  x <- mutate(df, planet=x)
+}
+planets <- c('Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn')
+planet_data <- lapply(planets, fun)
+big_table <- invoke(.f=bind_rows, .x=planet_data)
+```
+###### COMMENTED CODE CHUNKS
+Create data frame `df` with 12 cases, two variables.
+```{r rbind, echo=1, eval=FALSE}
+```
+Define function `fun` that uses `mutate` to add variable `planet` to input table `df`.
+```{r rbind, echo=3:5, eval=FALSE}
+```
+Define char vector of six planet names.
+```{r rbind, echo=6, eval=FALSE}
+```
+`lapply` applies a function over elements of a list or vector. Here, `lapply` takes as input char vector of planet names, and applies function `fun` over this vector, meaning that planet names are input `x` for `fun`. Output is a list `planet_data` containing six data frames - each of which is `df` with a third column whose values are one of six planet names.
+```{r rbind, echo=7, eval=FALSE}
+```
+To this point, the code has been about creating tables that can be used to demonstrate `dplyer::bind_rows`. Those six tables now exist in the list `planet_data`. `bind_rows` simply stacks tables one on top of the other, without changing the input tables. Here, the six tables in `planet_data` share the same three variables. In this example, `purrr::invoke` is used to apply `.f=bind_rows` to the list of six tables contained in `.x=planet_data`. Output is a single table `big_table` that is a stack of the six individual tables.
+```{r rbind, echo=8, eval=FALSE}
+```
+
+<br>
+
+##### Bind two tables with same cases, different variables; add columns but not rows
+
+###### R function:
+`dplyr::left_join`
+`dplyr::bind_cols`
+
+###### SPSS equivalent:
+`MATCH FILES`  
+
+###### VALID CODE TO RUN
+```{r left_join, eval=FALSE}
+df1 <- tibble(id=1:5, x=25:29, y=15:19, z=31:35) 
+df2 <- tibble(id=1:5, a=45:49, b=55:59, c=61:65) 
+df3 <- tibble(id=1:5, a=75:79, b=85:89, c=91:95) 
+df4 <- df1 %>% left_join(df2, by = "id")
+df5 <- bind_cols(df1, df2, df3)
+```
+###### COMMENTED CODE CHUNKS
+Create three data frames (`df1`, `df2`, `df3`), each with five cases, four variables. They share one variable in common `id` which has identical values in all three data frames.
+```{r left_join, echo=1:3, eval=FALSE}
+```
+Pipe `df1` into `dplyr::left_join`, which binds columns of `df2` (“right” file) to columns of `df1` (“left” file). Matches on key variable `by='id'`. Keeps all cases of left file, only cases of right file that have a match on `id` column of left file. Unlike SPSS `MATCH FILES`, does not require pre-sorting on `by` variable. Output is assigned to new dataframe `df3`. Note that `by` variable name must be enclosed in quotes
+```{r left_join, echo=4, eval=FALSE}
+```
+`bind_cols` can be used to join a set of data frames with different variables, when there is no need to match rows by an index variable. In this examples, the three data frames joined into a single table do share a common variable `id`, so `bind_cols` renames succeeding instances as `id1`, `id2`, etc.
+```{r left_join, echo=5, eval=FALSE}
+```
+
+<br>
+
+##### Bind multiple tables with same cases, different variables
+
+###### R function:
+`purrr::reduce`  
+
+###### SPSS equivalent:
+`MATCH FILES`  
+
+###### VALID CODE TO RUN
+```{r multiple_join, eval=FALSE}
+x <- data_frame(i = c("a","b","c"), j = 1:3)
+y <- data_frame(i = c("b","c","d"), k = 4:6)
+z <- data_frame(i = c("c","d","a"), l = 7:9)
+
+df_left <- list(x, y, z) %>% reduce(left_join, by = "i")
+df_full <- list(x, y, z) %>% reduce(full_join, by = "i")
+```
+###### COMMENTED CODE CHUNKS
+Create three data frames (`x`, `y`, `z`), each with three cases, two variables. They share one variable in common `i` which has different values across all three data frames.
+```{r multiple_join, echo=1:3, eval=FALSE}
+```
+First example uses `left_join`. The three data frames are put into a `list` and then piped into `purrr::reduce`, which applies `left_join` recursively to the list elements, in each case binding columns according to values of `i`. That is, `reduce` first joins `x` to `y`, and then joins the output table from that join to `z`. With `left_join` only cases with values on `x$i` are retained; thus, `k` is missing for `i` = a, and `l` is missing for `i` = b. Second example use `full_join`, which keeps all cases from all three input data frames. Because none of the input tables have all four possible values of `i`, the ouput table has four cases, and only the case where `i` = c has complete data. Variables `j`, `k`, and `l`, each have missing data from one case.
+```{r multiple_join, echo=5:6, eval=FALSE}
+```
+<br>
+
+#### EXAMINE VARIABLES: FREQUENCY TABLE, BASIC DESCRIPTIVES, HISTOGRAM
+
+###### R functions:
+`dplyr::count`  
+`dplyr::mutate`  
+`dplyr::summarise`   
+`ggplot2::ggplot`
+`dplyr::glimpse`
+
+###### SPSS equivalent:
+`FREQUENCIES`  
+  `/STATISTICS`  
+  `/HISTOGRAM=NORMAL`
+
+
+###### VALID CODE TO RUN
+```{r freq_hist, eval=FALSE}
+df <- tibble(tot = rep(1:10, c(1,5,4,9,11,14,15,10,8,3))) 
+tot_freq <- df %>% count(tot) %>% 
+  mutate(perc = round(100*(n/sum(n)), 1), cum_per = round(100*(cumsum(n)/sum(n)), 1))
+tot_desc <- df %>% summarise(mean = round(mean(tot),2), median = median(tot), sd = round(sd(tot),2), 
+                   min = min(tot), max = max(tot))
+
+ggplot(data = df, aes(tot)) +
+  geom_histogram(
+    binwidth = .2,
+    col = "red",
+    fill = "blue",
+    alpha = .2
+  ) +
+  scale_x_continuous(breaks = seq(0, 10, 1)) +
+  scale_y_continuous(breaks = seq(0, 15, 1)) +
+  labs(title = "Frequency Distribution") + 
+  stat_function(
+    fun = function(x, mean, sd, n){
+      n * dnorm(x = x, mean = mean, sd = sd)
+    }, 
+    args = with(df, c(mean = mean(tot), sd = sd(tot), n
+                          = length(tot)))
+  ) + 
+  theme(panel.grid.minor=element_blank())
+
+glimpse(df)
+```
+
+<br>
+
+###### COMMENTED CODE CHUNKS
+Create data frame `df` with single total-score column `tot`, 80 cases (rows).
+```{r freq_hist, echo=1, eval=FALSE}
+```
+Generate frequency table `tot_freq`. Pipe `df` into `count(tot)`, which yields two columns: one with all values of `tot`, one `n` with number of cases per each value. Pipe these columns into `mutate`, which generates two more columns: `perc` = percentage of total cases for each value of `tot`, and `cum_per` = cumulative percentage over increasing values of `tot`. These latter columns are rounded `round` to two decimal places.
+```{r freq_hist, echo=2:3, eval=FALSE}
+```
+Generate table of descriptive statistics `tot_desc`. Pipe `df` into `summarise`, yielding a single-row table showing `mean`, `median`, `sd`, `min`, and `max`. `mean` and `sd` are rounded to two decimal places.
+```{r freq_hist, echo=4:5, eval=FALSE}
+```
+`ggplot` takes data frame `df` as input, yielding histogram `geom_histogram` showing the distribution of variable `aes(tot)`. `binwidth` controls width of histogram columns, `col` controls color of column outlines, `fill` controls color of column fill, `alpha` controls transparency of columns (value 0-1). Adjust the values of these arguments to change the appearance of the graph.
+```{r freq_hist, echo=7:13, eval=FALSE}
+```
+`scale_y_continuous` applies new scale to y axis, using argument `breaks`. `seq` sets scale ranging from 0 to 15, in increments of 1. `scale_x_continuous` works analogously.
+```{r freq_hist, echo=14:15, eval=FALSE}
+```
+`lab` can be used to provide text labels for the graph, in this case a title.
+```{r freq_hist, echo=16, eval=FALSE}
+```
+`stat_function` superimposes an additional graphic on top of histogram created by `ggplot`. Here `stat_function` draws normal probability curve (which is a line graph; default `geom` of `stat_function` is line). Argument `fun` defines anonymous function with four arguments `function(x, mean, sd, n)`. In this function, those four arguments are given as input to another function `dnorm`. `dnorm` yields normal probability density plot based on those input paramaters, which `function(x, mean, sd, n)` then multiplies by `n` to yield drawn line that is proportional to n of cases graphed in histogram. `args` defines the four arguments (parameters) that are fed into `function(x, mean, sd, n)` and `dnorm`, e.g., input data frame `df`, mean of `tot`, sd of `tot`, n of cases of `tot` (latter defined as `length` of `tot` as numerical vector).
+```{r freq_hist, echo=17:23, eval=FALSE}
+```
+`theme` changes non-data elements of graphic, in this case by removing minor gridlines. `element_blank` means 'draw nothing'.
+```{r freq_hist, echo=24, eval=FALSE}
+```
+`glimpse` prints a summary of the data frame, including number of observations (rows, cases), number of variables (columns, features), type and cell values for each variable.
+```{r freq_hist, echo=26, eval=FALSE}
+```
+
+<br>
+
+#### READ DATA
+
+###### R functions:
+`haven::read_sav()`   
+`readxl::read_excel()`  
+`readr::read_csv()`  
+`data.table::fread()`
+
+###### SPSS equivalent:
+`GET FILE`
+`GET DATA`  
+  `/TYPE = TXT`  
+  `/TYPE = XLSX`  
+
+###### COMMENTED CODE CHUNKS
+Use `haven::read_sav()` to read SPSS (.sav) files. Be aware of variable formats on .sav coming into R. Importing .csv works best in R, in general. You may want to use SPSS to export to .csv before bringing data into R.
+```{r haven::read_sav(), eval=FALSE}
+df <- read_sav('.\data.sav')
+```
+Use `readxl::read_excel()` to read Excel (.xlsx) files. 
+```{r readxl::read_excel(), eval=FALSE}
+df <- read_excel('.\data.xlsx')
+```
+Use `readr::read_csv()` to read .csv files. 
+```{r readr::read_csv(), eval=FALSE}
+df <- read_csv('.\data.csv')
+```
+Use `data.table::fread()` with `select` or `drop` arguments to read in only certain columns from .csv files. 
+```{r data.table::fread(), eval=FALSE}
+dat <- fread(here("DATA/Age_x_gender_final.csv"), select = c("male","female"))
+```
+All three `read` functions create tibble data frame (df is generic notation to indicate that object is a data frame). Tibbles are a data format introduced as part of the tidyverse package. Tibbles are easier to manipulate than base-R data frames. Note `.\data.xlsx` directory structure. Best practice in R is to use relative file paths. Create an R project for your work, and open that project to begin your session. The folder where your R project lives is given by the dot ‘.’ at the beginning of file path.
+
+
+<br>
+
+#### RENAME VARIABLES
+
+###### R functions:
+`dplyr::rename()`  
+
+###### SPSS equivalent:
+`RENAME VARIABLES`
+
+###### VALID CODE TO RUN
+The code below initializes a data frame `df`, and prints it to show the column (variable) names. It then initializes a second data frame `df_rename` and calls `dplyr::rename()` to change the variable names, printing it to show the change. Note that the *new* variable names are given on the *left* side of the equals sign, which is counter-intuitive and opposite of the grammar in SPSS.
+```{r rename_var, eval=FALSE}
+df <- tibble(v=1:5, x=25:29, y=15:19, z=31:35)
+df
+df_rename <- df %>% rename(a=v, b=x, c=y, d=x)
+df_rename
+```
+
+<br>
+
+#### SELECT AND DELETE VARIABLES
+
+###### R functions:
+`dplyr::select()`  
+`dplyr::pull()`  
+`$` operator  
+`[]` operator
+
+NOTE: `select` sometimes creates a conflict with other packages; if it throws an error similar to `Error in select(., group) : unused argument (group)`, call it as `dplyr::select`, this should fix the error.
+
+###### SPSS equivalent:
+`/KEEP` subcommand  
+`/DROP` subcommand
+
+###### VALID CODE TO RUN
+```{r delete_var, eval=FALSE}
+df <- tibble(v=1:5, x=25:29, y=15:19, z=31:35)
+df %>% select(z, v)
+df %>% select(z, everything())
+df %>% select(-v)
+df %>% select(v:y)
+df %>% select(-(v:y))
+z_vec <- df %>% pull(z)
+x_vec <- df$x
+v_df <- df[1]
+u_df <- df %>% select(4)
+```
+###### COMMENTED CODE CHUNKS
+Create data frame `df` with 5 cases, 4 vars.
+```{r delete_var, echo=1, eval=FALSE}
+```
+`select` drops all variables except `z` and `v` from df data object. Re-sequence, so that `z` is to the left of `v`.
+```{r delete_var, echo=2, eval=FALSE}
+```
+Move `z` to far left column, followed by all other vars in their original order, using helper `everything()`.
+```{r delete_var, echo=3, eval=FALSE}
+```
+Drop (delete) column (var) `v`.
+```{r delete_var, echo=4, eval=FALSE}
+```
+Keep `v`, `y`, and all vars between these two.
+```{r delete_var, echo=5, eval=FALSE}
+```
+Drop `v`, `y`, and all vars between these two.
+```{r delete_var, echo=6, eval=FALSE}
+```
+`pull` extracts column `z` into a numerical vector `z_vec`.
+```{r delete_var, echo=7, eval=FALSE}
+```
+Dollar-sign `$` operator extracts column `x` into a numerical vector `x_vec`. `$` subsets a data frame, using the form `df$var`, where `var` is the column name.
+```{r delete_var, echo=8, eval=FALSE}
+```
+Single-bracket `[]` operator extracts column `v` into a data frame `x_df`. `[]` subsets a data frame, using the form `df[seq]`, where `seq` is position of the column, going from left to right. `[]` can extract more than one column; e.g., `df[1,4]` or `df[1:3]`.
+```{r delete_var, echo=9, eval=FALSE}
+```
+Use `select` to select columns by position number.
+```{r delete_var, echo=10, eval=FALSE}
+```
+
+<br>
+
+#### SORT CASES
+
+###### R function:
+`dplyr::arrange()`   
+
+###### SPSS equivalent:
+`SORT CASES`
+
+###### COMMENTED CODE CHUNKS
+Code below creates data frame with 12 cases, 2 vars (`month.name` is a constant in R). `arrange` sorts cases ascending on `mo`. To sort descending, use `arrange(desc())`.
+```{r dplyr::arrange(), eval=FALSE}
+df <- tibble(id=1:12, mo=month.name) %>% 
+  arrange(mo)
+```
+<br>
+
+#### STRING VARIABLES
+
+###### R functions:
+`base::c()`   
+`base::as.character()`   
+`base::is.character()`   
+
+###### SPSS equivalent:
+`STRING`  
+`ALTER TYPE`
+
+###### COMMENTED CODE CHUNKS
+A character vector is the R equivalent of a string variable in SPSS. Create a character vector `charvec` using the assignment operator `<-` and the combine function `c`.
+```{r charvec1, eval=FALSE}
+charvec1 <- c('dog', 'cat', 'mouse')
+```
+Coerce a data object into a character vector (analogous to SPSS `ALTER TYPE`).
+```{r charvec2, eval=FALSE}
+numvec <- c(1:10)
+charvec2 <- as.character(numvec)
+str(charvec2)
+```
+Test whether a data object is of character type.
+```{r charvec3, eval=FALSE}
+is.character(c(1:10))
+is.character(c('dog', 'cat', 'mouse'))
+```
+
+<br>
+
+#### WRITE DATA
+
+###### R function:
+`readr::write_csv`   
+
+###### SPSS equivalent:
+`SAVE TRANSLATE`  
+  `/TYPE = CSV`  
+
+
+###### COMMENTED CODE CHUNKS
+Save `df` as .csv file in R project directory.
+```{r readr::write_csv, eval=FALSE}
+df <- tibble(id=1:5, x=25:29, y=15:19, z=31:35) 
+write_csv(df, '.\df.csv')
+```
