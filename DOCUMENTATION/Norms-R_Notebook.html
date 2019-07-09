@@ -69,9 +69,7 @@ h6 {
 </style>
 
 
-</head>
 
-<body>
 
 <style type="text/css">
 .main-container {
@@ -102,8 +100,6 @@ summary {
 </style>
 
 
-
-<div class="container-fluid main-container">
 
 <!-- tabsets -->
 
@@ -178,6 +174,15 @@ $(document).ready(function () {
 
 
 
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
 
 <div class="fluid-row" id="header">
 
@@ -200,43 +205,225 @@ $(document).ready(function () {
 </ol>
 <p>The HTML narrative is organized into sections reflecting discrete topics and operations in the R workflow. Each section has two parts:</p>
 <ol style="list-style-type: decimal">
-<li><code>VALID CODE TO RUN</code>: this code can be copy-and-pasted into your working R script. Before running, make sure that all file paths relating to input and output files are specified correctly for your local environment. <strong>Note that all code in this Notebook was written for the Mac OS, so if you are working in Windows, you’ll need to substitute <code>\</code> for <code>/</code> in file paths.</strong></li>
+<li><code>VALID CODE TO RUN</code>: this code can be copy-and-pasted into your working R script. Before running, make sure that all file paths relating to input and output files are specified correctly for your local environment. <strong>Note that all code in this Notebook was written for the Mac OS, so if you are working in Windows, you may need to substitute <code>\</code> for <code>/</code> in file paths.</strong></li>
 <li><code>COMMENTED CODE CHUNKS</code>: these snippets provide the analysis and documentation of the code and workflow. The R code in these snippets is redundant with that in <code>VALID CODE TO RUN</code> section. Here, it serves merely to enhance the code documenatation, and is not meant to be run.</li>
 </ol>
 <p><br></p>
 </div>
-<div id="utilizing-rstudio-projects-and-directory-paths" class="section level4">
-<h4>UTILIZING RStudio PROJECTS AND DIRECTORY PATHS:</h4>
-<p>To keep your work organized, set up a project in RStudio, by clicking File -&gt; New Project. You’ll be asked to specify a working directory associated with the project. To facilitate running the code of this project easily, locate input files in a folder named <code>INPUT FILES</code>, within the working directory associated with this project. Also, create a folder named <code>OUTPUT FILES</code>, within the working directory associated with this project. As mentioned above, you need to make sure file paths in your script are specified correctly, in order to read input files and/or write output files.</p>
+<div id="create-an-rstudio-project-with-standard-folder-structure" class="section level4">
+<h4>CREATE AN RStudio PROJECT WITH STANDARD FOLDER STRUCTURE:</h4>
+<p>To keep your work organized, set up a project in RStudio, by clicking File -&gt; New Project. You’ll be asked to specify a working directory associated with the project. Create the following folders within the working directory:</p>
+<ul>
+<li><code>CODE</code></li>
+<li><code>INPUT-FILES</code></li>
+<li><code>OUTPUT-FILES</code></li>
+</ul>
+<p>As mentioned above, you need to make sure file paths in your script are specified correctly, in order to read input files and/or write output files.</p>
 <p><br></p>
 </div>
-<div id="essential-packages" class="section level4">
-<h4>ESSENTIAL PACKAGES</h4>
-<p>Packages are the add-on features and functions that give R its power and versatility. Refer to the script <code>Essential_Packages.R</code> for the latest list of packages to install in Rstudio, and load at the beginning of every script using <code>library()</code>.</p>
-<p>To use the code in this notebook, install and run these packages:</p>
+<div id="starting-input" class="section level4">
+<h4>STARTING INPUT:</h4>
+<p>The norming script requires two types of starting input: <em>data</em> and <em>parameters</em>.</p>
+<div id="input-data-file" class="section level5">
+<h5>Input Data File</h5>
+<p>This file is a sample of cases with the raw score to be normed. It is required, and must be located in the <code>INPUT-FILES</code> folder, with the following specifications:</p>
+<ul>
+<li><strong>.csv</strong> format</li>
+<li>Must have at least these <strong>numeric</strong> variables (columns):
+<ul>
+<li><code>ID</code>: (exact spelling/capitalization)</li>
+<li><code>agestrat</code>: (exact spelling/capitalization)</li>
+<li>name of raw score to be normed</li>
+</ul></li>
+<li><code>agestrat</code> coding: values are number of months equivalent to lower bound of each agestrat. Examples of coding:
+<ul>
+<li>0 months - 2 months = 0</li>
+<li>03:05 = 3</li>
+<li>1-2 years = 12</li>
+<li>7-6 to 8-0 = 90</li>
+<li>18-21 years = 216</li>
+</ul></li>
+</ul>
+</div>
+<div id="input-parameters" class="section level5">
+<h5>Input Parameters</h5>
+<p>The script allows you to enter the input parameters interactively at the console, or retrieve them from a saved file. The latter method is preferred because it reduces keyboard entry when running the script numerous times. The input parameters file must be located in the <code>INPUT-FILES</code> folder, with the following specifications:</p>
+<ul>
+<li>Exact file name: <code>Input-Parameters.R</code></li>
+<li>Saved as an R script: copy code below into script and insert names/values where indicated (preserving quote marks where applicable)</li>
+</ul>
+<pre class="r"><code>input_file_name &lt;- c('insert file name here')
+score_name &lt;- c('insert score name here')
+max_raw &lt;- insert maximum raw score value here
+min_raw &lt;- insert minimum raw score value here</code></pre>
+<p><br></p>
+</div>
+</div>
+<div id="packages" class="section level4">
+<h4>PACKAGES</h4>
+<p>To use the code in this Notebook, install these packages and load them using <code>library()</code>:</p>
+<ul>
+<li><code>here</code>: Robust method for specifying file paths</li>
+<li><code>reshape2</code>: Collapse columns to rows, vice versa</li>
+<li><code>moderndive</code>: User-friendly linear modeling, regression and correlation tools</li>
+<li><code>magrittr</code>: Pipe operators</li>
+<li><code>tidyverse</code>: Many essential packages for data wrangling, analysis (<code>tidyr</code>, <code>dplyr</code>, <code>purrr</code>, <code>ggplot2</code>, <code>readr</code>, etc.)</li>
+<li><code>ggpmisc</code>: Add equations, fit statistics to line plots</li>
+<li><code>ggrepel</code>: more <code>ggplot2</code> extensions</li>
+</ul>
+<p>In this Notebook, the double-colon <code>::</code> notation is used to identify a function’s source package (e.g., <code>base::eval()</code>, <code>dplyr::select()</code>, etc.)</p>
 <div id="valid-code-to-run" class="section level6">
 <h6>VALID CODE TO RUN</h6>
-<pre class="r"><code>suppressMessages(library(here)) # BEST WAY TO SPECIFY FILE PATHS
-library(broom) # TIDY MODEL OUTPUTS
-library(moderndive) # USER-FRIENDLY LINEAR MODELING, REGRESSION AND CORRELATION TOOLS.
-library(magrittr) # PIPE OPERATORS
-# note use of `suppressWarnings` to silence chatter during interactive session
+<pre class="r"><code>suppressMessages(library(here))
+library(reshape2)
+suppressMessages(library(moderndive))
+library(magrittr)
 suppressMessages(suppressWarnings(library(tidyverse)))
-suppressMessages(library(ggpmisc)) # EXTENSIONS TO ggplot2: ADD EQUATIONS AND FIT STATISTICS TO FITTED LINE PLOTS
-library(ggrepel) # MORE ggplot2 EXTENSIONS</code></pre>
-<p>Note use of <code>suppressMessages</code> to silence chatter during startup; and use of <code>suppressWarnings</code> to silence chatter during interactive session.</p>
+suppressMessages(library(ggpmisc))
+library(ggrepel)</code></pre>
+<p>Note use of <code>base::suppressMessages()</code> to silence chatter during startup; and use of <code>base::suppressWarnings()</code> to silence chatter during interactive session.</p>
 <p><br></p>
 </div>
 </div>
 <div id="code-overview" class="section level4">
 <h4>CODE OVERVIEW</h4>
-<p>This script takes as input a .csv with all cases in the normative sample. Required columns are ID, age group, and score for the variable to be normed. This example uses the total score from the Antonyms test (ANT) of the CASL-2. To run this code, copy this input file to the <code>INPUT FILES</code> folder in your R project working directory:</p>
-<p><code>WPS_DEPT\Research &amp; Development\Projects\CASL-2\pd\DSH DOCS\CASL-2 NORMS\ANT\ANTraw_STAND.csv</code></p>
+<p>This script takes as input a table containing cases of a raw score to be normed. It is assumed that the score has an age-related developmental progression, and requires ages-stratified norms. The input table is transformed through the following stages of the norming process:</p>
+<ul>
+<li>Read in and examine data: raw score descriptive statistics, histograms, plots</li>
+<li>Select cumulative percentage points to normalize the raw score distribution within each age group (<code>agestrat</code>)</li>
+<li>Impute normalized medians by <code>agestrat</code>, split SD into <code>lo</code> and <code>hi</code> components</li>
+<li>Use linear modeling to smooth medians, lo SDs, and hi SDs</li>
+<li>Impute new age groups to compensate for larger-than-expected raw score changes between adjacent groups (optional)</li>
+<li>Adjust smoothed medians, SDs by hand to correct score reversals, compensate for floor/ceiling effects (optional)</li>
+<li>Generate publication-ready raw-to-standard-score lookup tables</li>
+</ul>
 <p><br></p>
+</div>
+<div id="select-method-for-entering-input-parameters-read-input-dataa" class="section level4">
+<h4>Select method for entering input parameters; read input dataa</h4>
+<div id="valid-code-to-run-1" class="section level6">
+<h6>VALID CODE TO RUN</h6>
+<pre class="r"><code>input_parameters_prompt &lt;- function() {
+  writeLines(
+    &quot;To initiate the norming process, R requires certain input parameters. Please choose a method for entering these parameters:\n\n1: Interactively at the console\n2: From a file named 'Input-Parameters.R' located in '[PROJECT DIRECTORY]/INPUT-FILES'\n&quot;
+  )
+  input_choice &lt;- as.numeric(0)
+  while (is.na(input_choice) || (!(input_choice %in% 1:2))) {
+    input_choice &lt;-
+      suppressWarnings(as.numeric(readline(prompt = &quot;Enter choice: &quot;)))
+    if (is.na(input_choice)) {
+      writeLines(&quot;Please enter 1 or 2\n&quot;)
+    } else {
+      if (input_choice == 1) {
+        cat(&quot;Enter the name of the input file, including the .csv suffix.\nUse exact spelling and capitalization.&quot;)
+        suppressWarnings(as.character(
+          readline(prompt = &quot;Input file: &quot;)
+        )) %&gt;% assign('input_file_name', ., envir = .GlobalEnv)
+        cat(&quot;\nEnter the column name of the score to be normed.\nUse exact spelling and capitalization.&quot;)
+        suppressWarnings(as.character(
+          readline(prompt = &quot;Score name: &quot;)
+        )) %&gt;% assign('score_name', ., envir = .GlobalEnv)
+        cat(&quot;\nEnter the HIGHEST possible raw score for the score to be normed.&quot;)
+        suppressWarnings(as.integer(
+          readline(prompt = &quot;Maximum raw score: &quot;)
+        )) %&gt;% assign('max_raw', ., envir = .GlobalEnv)
+        cat(&quot;\nEnter the LOWEST possible raw score for the score to be normed.&quot;)
+        suppressWarnings(as.integer(
+          readline(prompt = &quot;Minimum raw score: &quot;)
+        )) %&gt;% assign('min_raw', ., envir = .GlobalEnv)
+        break
+      } else if (input_choice == 2) {
+        source(here('INPUT-FILES/Input-Parameters.R'))
+        break
+      } else {
+        writeLines(&quot;Please enter 1 or 2\n&quot;)
+      }
+    }
+  }
+}
+input_parameters_prompt()
+
+suppressMessages(
+  read_csv(
+    here(
+      paste0('INPUT-FILES/', input_file_name)
+    )
+  )
+) %&gt;% 
+  group_by(agestrat) %&gt;% 
+  assign(paste0(score_name, '_raw_by_agestrat'), ., envir = .GlobalEnv)
+num_agestrat &lt;- length(unique(eval(as.name(paste0(score_name, '_raw_by_agestrat')))$agestrat))</code></pre>
+</div>
+<div id="commented-code-chunks" class="section level6">
+<h6>COMMENTED CODE CHUNKS</h6>
+<p>The script begins with an interactive session, where the user is prompted at the console to choose a method for entering input parameters. This interactive session can only be executed from source by entering <code>command-shift-S</code>. The code won’t function properly if run as an isolated block using <code>command-enter</code>; this mode of execution won’t pause and wait for user input.</p>
+<p><code>base::function()</code> creates a function to run this interactive session. The function is assigned <code>&lt;-</code> the name <code>input_parameters_prompt</code>. <code>base::writeLines</code> prints a numbered list of user instructions to the console, using the escape character <code>\n</code> to insert line breaks in the displayed text. The user can choose to enter input parameters interactively at the console, or load them from a file located in a specifc directory in the R project folder structure.</p>
+<pre class="r"><code>input_parameters_prompt &lt;- function() {
+  writeLines(
+    &quot;To initiate the norming process, R requires certain input parameters. Please choose a method for entering these parameters:\n\n1: Interactively at the console\n2: From a file named 'Input-Parameters.R' located in '[PROJECT DIRECTORY]/INPUT-FILES'\n&quot;
+  )</code></pre>
+<p><code>input_choice</code> is initialized as a numeric vector with placeholder value of 0. Within the function <code>input_parameters_prompt</code>, <code>input_choice</code> will hold the numerical value that the user enters when prompted by the console instructions. The value of <code>input_choice</code> controls the flow of logic within <code>input_parameters_prompt</code>; its value determines which input parameter entry method will be utilized.</p>
+<p>Note that the assignment operator <code>&lt;-</code> is used to initialize <code>input_choice</code>, rather than the <code>base::assign()</code> function that is used elsewhere inside script-defined functions. The reason for this is that <code>input_choice</code> is a temporary variable that is not utilized outside of the body of this particular function. Thus, it does not need to be made available in the global environment. When <code>&lt;-</code> is used within the body of a function, the object thereby created is avaiable only in the local environment of that function. In this instance, we can get away with using <code>&lt;-</code> because <code>input_choice</code> is not needed in the global environment.</p>
+<pre class="r"><code>  input_choice &lt;- as.numeric(0)</code></pre>
+<p>The code for input parameter entry method is called and executed within a <code>while</code> loop, which iterates as long as a compound logical condition is met (logical “or” <code>||</code>). This condition is specified by <code>is.na(input_choice) || (!(input_choice %in% 1:2)</code>, which tells the <code>while</code> loop to keep iterating as long as the value of <code>model_choice</code> is anything other than 1 or 2 (i.e., the user enters a non-permitted value at the console). Thus, if the user enters an integer other than 1 or 2, or any other keystroke(s), including <code>enter</code> without an entry, the loop will continue to iterate and control will <em>not</em> be passed to downstream code. <code>is.na(model_choice)</code> is included in this compound condition because any keystroke other than 1 or 2 is coerced to <code>NA</code> (R code for missing) within this function. Thus, the loop keeps iterating if the function returns <code>NA</code>.</p>
+<pre class="r"><code>  while (is.na(input_choice) || (!(input_choice %in% 1:2))) {</code></pre>
+<p>Within the <code>while</code> loop, <code>input_choice</code> is respecified to read user input from the console. <code>base::readline()</code> allows the specification of a prompt at the console, and reads user keystroke input, which is then assigned to <code>input_choice</code>. Wrapping <code>readline</code> in <code>suppressWarnings</code> keeps the displayed text on the console clean and readable.</p>
+<pre class="r"><code>    input_choice &lt;-
+      suppressWarnings(as.numeric(readline(prompt = &quot;Enter choice: &quot;)))</code></pre>
+<p><code>if</code>-<code>else</code> statements control the flow of operations within the loop. The first <code>if</code> statement specifies that if <code>input_choice</code> is <code>NA</code> (i.e., the user enters a non-permitted keystroke(s) at the console), <code>writeLines</code> prints a reminder to enter a permitted keystroke, and then control returns to the beginning of the loop, where <code>readline</code> again prompts the user to enter a model choice.</p>
+<pre class="r"><code>    if (is.na(input_choice)) {
+      writeLines(&quot;Please enter 1 or 2\n&quot;)</code></pre>
+<p>Next comes a nested logical flow that is subsumed under <code>else</code>. When control enters the nested flow, the logical condition is that <code>input_choice</code> is <em>not</em> <code>NA</code>. The nested <code>if</code>-<code>else</code> statements control what happens when the user enters a permitted choice (i.e., the value of <code>input_choice</code> is 1 or 2). Under the first of these conditions (specified by <code>if (input_choice == 1)</code>), the user is prompted to enter the four input parameters (<code>input_file_name</code>, <code>score_name</code>, <code>max_raw</code>, <code>min_raw</code>) at the console. The instructions for entry are printed to the screen by callling <code>base::cat()</code>, which converts its arguments to character vectors and displays them on the screen. <code>readline()</code> is used to capture user input, which is then sent to <code>assign()</code> using the pipe operator <code>%&gt;%</code>. <code>assign</code> names the input object and makes it available in the global environment for downstream code.</p>
+<p>Under the second condition (defined by <code>else if (input_choice == 2)</code>), the input parameters are read in from a preconfigured R script (<code>Input-Parameters.R</code>, created with instructions given earlier in this Notebook). <code>base::source()</code> is used to execute this script, from the location given by <code>here('INPUT-FILES/Input-Parameters.R')</code>, which provides a directory path from the R project folder.</p>
+<p>The <code>if</code> and <code>else if</code> conditions are followed by <code>break</code> which causes control to exit the loop and continue into downstream code. Thus, the <code>input_parameters_prompt</code> function prompts the user to select a method of input parameter entry, repeats the prompt when a non-permitted keystroke is entered, and ultimately executes one of two entry methods and makes the output of the selected method available to downstream code.</p>
+<pre class="r"><code>    } else {
+      if (input_choice == 1) {
+        cat(&quot;Enter the name of the input file, including the .csv suffix.\nUse exact spelling and capitalization.&quot;)
+        suppressWarnings(as.character(
+          readline(prompt = &quot;Input file: &quot;)
+        )) %&gt;% assign('input_file_name', ., envir = .GlobalEnv)
+        cat(&quot;\nEnter the column name of the score to be normed.\nUse exact spelling and capitalization.&quot;)
+        suppressWarnings(as.character(
+          readline(prompt = &quot;Score name: &quot;)
+        )) %&gt;% assign('score_name', ., envir = .GlobalEnv)
+        cat(&quot;\nEnter the HIGHEST possible raw score for the score to be normed.&quot;)
+        suppressWarnings(as.integer(
+          readline(prompt = &quot;Maximum raw score: &quot;)
+        )) %&gt;% assign('max_raw', ., envir = .GlobalEnv)
+        cat(&quot;\nEnter the LOWEST possible raw score for the score to be normed.&quot;)
+        suppressWarnings(as.integer(
+          readline(prompt = &quot;Minimum raw score: &quot;)
+        )) %&gt;% assign('min_raw', ., envir = .GlobalEnv)
+        break
+      } else if (input_choice == 2) {
+        source(here('INPUT-FILES/Input-Parameters.R'))
+        break</code></pre>
+<p>A final <code>else</code> condition is triggered by any user input not subsumed under the prior logical conditions. It reprompts the user, and returns control to the beginning of the loop. As noted above, the loop will only stop running if the user enters 1 or 2.</p>
+<pre class="r"><code>      } else {
+        writeLines(&quot;Please enter 1 or 2\n&quot;)</code></pre>
+<p><code>input_parameters_prompt</code> is called with empty parentheses <code>()</code> because it takes no arguments. The function simply executes the code within its body, it does not depend on any input values specified in the function call.</p>
+<pre class="r"><code>input_parameters_prompt()</code></pre>
+<p>The next snippet reads the input date file (normative sample) using <code>readr::read_csv</code>. The file path within <code>here::here()</code> is concatenated with <code>paste0()</code>, which joins a static string with the character vector <code>input_file_name</code>, an input parameter initialized by upstream code.</p>
+<pre class="r"><code>suppressMessages(
+  read_csv(
+    here(
+      paste0('INPUT-FILES/', input_file_name)
+    )
+  )
+) %&gt;% </code></pre>
+<p>The input data file is piped forward into <code>dplyr::group_by</code>, which groups the rows according to their values on <code>agestrat</code> (the grouping will be utilized by downstream processes). The data file is then saved as an object in the global environment using <code>assign()</code>. Within the <code>assign</code> call, the first argument is the object name, which is a string concatenated by <code>paste0()</code>, joining the input parameter <code>score_name</code> with a static suffix <code>_raw_by_agestrat</code>. The second argument of <code>assign</code> is the piped-in data file, which is denoted by the dot token <code>.</code>. The third argument of <code>assign</code> designates the destination environment <code>.GlobalEnv</code>.</p>
+<pre class="r"><code>  group_by(agestrat) %&gt;% 
+  assign(paste0(score_name, '_raw_by_agestrat'), ., envir = .GlobalEnv)</code></pre>
+<p>At this point it is useful to extract a key value used throughout downstream code: the number of age groups in the input data file. This value is assigned to <code>num_agestrat</code>. The desired value can be extracted from the <code>agestrat</code> column of the input data file, which is now named by the string <code>paste0(score_name, '_raw_by_agestrat')</code>.</p>
+<p>Once the data file is named by a concatenated string in this way, we must force R to evaluate the name not as a string, but as the name of an object in the global environment. We accomplish this by wrapping the file name in <code>eval(as.name())</code>. <code>base::as.name</code> coerces its argument to an object name. <code>base::eval</code> forces R to evaluate its argument, in this case returning an object name which can be processed by other functions. Appending this name with the suffix <code>$agestrat</code> specifies that we want to process a single column, not the entire table (<code>$</code> is a column-subsetting operator).</p>
+<p>So identified, the target column contains values of <code>agestrat</code> for every case in the input data file. Wrapping the column name in <code>base::unique()</code> returns only the unique values of <code>agestrat</code> in the form of a numerical vector. Using <code>base::length()</code> we return the length of this vector (the number of values it contains), i.e., the number of age groups, which is the value we seek for <code>num_agestrat</code>.</p>
+<pre class="r"><code>num_agestrat &lt;- length(unique(eval(as.name(paste0(score_name, '_raw_by_agestrat')))$agestrat))</code></pre>
+<p><br></p>
+</div>
 </div>
 <div id="read-in-data-generate-frequency-tables-by-agestrat-descriptive-statistics-z-score-lookup-table" class="section level4">
 <h4>Read in data, generate frequency tables by agestrat, descriptive statistics, z-score lookup table</h4>
-<div id="valid-code-to-run-1" class="section level6">
+<div id="valid-code-to-run-2" class="section level6">
 <h6>VALID CODE TO RUN</h6>
 <pre class="r"><code>ANTraw_by_agestrat &lt;-
   suppressMessages(read_csv(here('INPUT FILES/ANTraw_STAND.csv')
@@ -264,7 +451,7 @@ perc_z &lt;- tribble(
   95,   1.6449
 )</code></pre>
 </div>
-<div id="commented-code-chunks" class="section level6">
+<div id="commented-code-chunks-1" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
 <p>Read in normative data with total scores for ANT. <code>here</code> locates files relative to project root folder. <code>suppressMessages</code> keeps console output clean. Data frame is piped into <code>dplyr::group_by</code> to group data by agestrat.</p>
 <pre class="r"><code>ANTraw_by_agestrat &lt;-
@@ -302,7 +489,7 @@ NA</code></pre>
 </div>
 <div id="plot-raw-score-means" class="section level4">
 <h4>Plot raw score means</h4>
-<div id="valid-code-to-run-2" class="section level6">
+<div id="valid-code-to-run-3" class="section level6">
 <h6>VALID CODE TO RUN</h6>
 <pre class="r"><code>mean_plot &lt;- ggplot(data = ANT_tot_desc_agestrat, aes(group, mean)) +
   geom_point(
@@ -323,7 +510,7 @@ NA</code></pre>
   )
 print(mean_plot)</code></pre>
 </div>
-<div id="commented-code-chunks-1" class="section level6">
+<div id="commented-code-chunks-2" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
 <p><code>ggplot</code> takes data frame <code>ANT_tot_desc_agestrat</code> as input, yielding a scatterplot <code>geom_point</code> that maps agestrat to the x-axis and raw score mean to the y-axis <code>aes(group, mean)</code>. Plot output is assigned to <code>mean_plot</code> so that plot will print when code is executed from source. <code>col</code> controls color of plot point perimeter; <code>fill</code> controls color of point interior. Adjust the values of these arguments to change the appearance of the graph. Other useful argments include <code>alpha</code> (controls transparency of data element, values 0-1), <code>size</code> (of data points), <code>shape</code> (indicated by number, look up on internet to see charts).</p>
 <pre class="r"><code>mean_plot &lt;- ggplot(data = ANT_tot_desc_agestrat, aes(group, mean)) +
@@ -353,7 +540,7 @@ print(mean_plot)</code></pre>
 <div id="pause-execution-for-user-to-examine-plot" class="section level4">
 <h4>Pause execution for user to examine plot</h4>
 <p>When the code is sourced, the following chunk pauses execution and prompts the user to examine the newly created plot of raw score means and SDs.</p>
-<div id="valid-code-to-run-3" class="section level6">
+<div id="valid-code-to-run-4" class="section level6">
 <h6>VALID CODE TO RUN</h6>
 <pre class="r"><code>mean_plot_prompt &lt;- function() {
   writeLines(c(
@@ -366,7 +553,7 @@ print(mean_plot)</code></pre>
 }
 mean_plot_prompt ()</code></pre>
 </div>
-<div id="commented-code-chunks-2" class="section level6">
+<div id="commented-code-chunks-3" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
 <p><code>mean_plot_prompt()</code> is a function that takes no arguments and thus can be called with empty parentheses.</p>
 <pre class="r"><code>mean_plot_prompt &lt;- function() {</code></pre>
@@ -384,7 +571,7 @@ mean_plot_prompt ()</code></pre>
 </div>
 <div id="generate-histograms-by-agestrat" class="section level4">
 <h4>Generate histograms by agestrat</h4>
-<div id="valid-code-to-run-4" class="section level6">
+<div id="valid-code-to-run-5" class="section level6">
 <h6>VALID CODE TO RUN</h6>
 <pre class="r"><code>hist_plot &lt;- ggplot(data = ANTraw_by_agestrat, aes(ANT_total)) +
   geom_histogram(
@@ -397,7 +584,7 @@ mean_plot_prompt ()</code></pre>
   facet_wrap(~agestrat)
 print(hist_plot)</code></pre>
 </div>
-<div id="commented-code-chunks-3" class="section level6">
+<div id="commented-code-chunks-4" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
 <p><code>ggplot</code> takes data frame <code>ANTraw_by_agestrat</code> as input, yielding histogram <code>geom_histogram</code> showing the distribution of variable <code>aes(ANT_total)</code>. Plot output is assigned to <code>hist_plot</code> so that plot will print when code is executed from source. <code>binwidth</code> controls width of histogram columns, <code>col</code> controls color of column outlines. Adjust the values of these arguments to change the appearance of the graph.</p>
 <pre class="r"><code>hist_plot &lt;- ggplot(data = ANTraw_by_agestrat, aes(ANT_total)) +
@@ -420,7 +607,7 @@ print(hist_plot)</code></pre>
 </div>
 <div id="generate-graphs-of-means-sds-by-agestrat." class="section level4">
 <h4>Generate graphs of means, SDs by agestrat.</h4>
-<div id="valid-code-to-run-5" class="section level6">
+<div id="valid-code-to-run-6" class="section level6">
 <h6>VALID CODE TO RUN</h6>
 <pre class="r"><code>mean_plot &lt;- ggplot(data = ANT_tot_desc_agestrat, aes(group, mean)) +
   geom_point(
@@ -457,7 +644,7 @@ print(sd_plot)</code></pre>
 <p>Ideally, the values for <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code> would be 5, 10, 90 and 95, respectively. But in order to use 5 as the value for <code>lo1</code>, there needs to exist a cumulative percentage in the frequency table that is less than 5. The reason for this is that the formula for imputing normalized raw scores uses values from two adjacent rows in the frequency table. Thus, the value for <code>lo1</code> cannot sit on the lowest row of the frequency table, because it needs a trailing row (lag row) in order for the imputation formula to run.</p>
 <p>In many small sample size frequency tables, there exists no cumulative frequency value that is less than 5. For example the lowest value in the table might be 7.9, or 11.2. In these cases, the R code sets <code>lo1</code> at 10, or 15. The code automatically adjusts the values of <code>lo1</code>, <code>lo2</code> and <code>hi1</code> to ensure that the rows associated with these values always have a trailing row, and so that <code>lo2</code> sits on a different row than <code>lo1</code>, and <code>hi1</code> sits on a different row than <code>hi2</code>. In constrast to the other three points, <code>hi2</code> is a constant; its value is always set at 95. Because <code>hi2</code> sits at the top of the frequency distribution, it always has a trailing row and thus its value can be locked at the optimal value of 95.</p>
 <p><code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code> are used later used to impute raw scores that <strong>WOULD</strong> be associated with each point, <strong>IF</strong> the raw scores were normally distributed. The next section of code processes the age-stratified frequency table and chooses lo1, lo2, hi1, and hi2 for each age group.</p>
-<div id="valid-code-to-run-6" class="section level6">
+<div id="valid-code-to-run-7" class="section level6">
 <h6>VALID CODE TO RUN</h6>
 <pre class="r"><code>ANT_tot_age_lo1lo2_hi1hi2 &lt;-
   full_join(
@@ -501,7 +688,7 @@ print(sd_plot)</code></pre>
     hi2 = 95
   ) %&gt;% select(-min,-max)</code></pre>
 </div>
-<div id="commented-code-chunks-4" class="section level6">
+<div id="commented-code-chunks-5" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
 <p>Initializes an output table <code>ANT_tot_age_lo1lo2_hi1hi2</code>. <code>full_join</code> is analogous to SPSS MATCH FILES, in that it combines the columns of two tables (adding variables, not cases) according to the values of an index variable <code>by</code>. <code>full_join</code> keeps all values and all rows of the two tables that it combines. The code chunk below identifies the LHS table used by <code>full_join</code> as <code>ANT_tot_freq_agestrat</code>, the age-stratified frequency table.</p>
 <pre class="r"><code>ANT_tot_age_lo1lo2_hi1hi2 &lt;-
@@ -558,7 +745,7 @@ print(sd_plot)</code></pre>
 <div id="generate-imputed-medians-lo-and-hi-sds-by-agestrat" class="section level4">
 <h4>Generate imputed medians, lo and hi SDs by agestrat</h4>
 <p>The process of normalizing each age-group raw score distribution continues, by adding columns for the imputed median, and standard deviations above and below the median (lo_SD, hi_SD). Dividing the standard deviation into two components contributes to normalization by compensating for the skewness in the original raw score distributions.</p>
-<div id="valid-code-to-run-7" class="section level6">
+<div id="valid-code-to-run-8" class="section level6">
 <h6>VALID CODE TO RUN</h6>
 <pre class="r"><code>norm_build1 &lt;-
   ANT_tot_freq_agestrat %&gt;% left_join(ANT_tot_age_lo1lo2_hi1hi2, by = 'agestrat') %&gt;% mutate (
@@ -621,7 +808,7 @@ norm_build_med_hilo_sum &lt;-
     hi_SD = first(na.omit(hi_SD))
   ) %&gt;% mutate(ES = (median - lag(median))/((hi_SD+lag(hi_SD)+lo_SD+lag(lo_SD))/4), group = 1:27) %&gt;% select(group, everything())</code></pre>
 </div>
-<div id="commented-code-chunks-5" class="section level6">
+<div id="commented-code-chunks-6" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
 <p>Initializes an output table <code>norm_build1</code>. Input table is the age-stratified raw score frequency table <code>ANT_tot_freq_agestrat</code>. <code>left_join</code> matches the input table to the <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code> normalizing cumulative percentage points for each <code>agestrat</code>. <code>mutate</code> computes new variables.</p>
 <pre class="r"><code>norm_build1 &lt;-
@@ -706,7 +893,7 @@ norm_build_med_hilo_sum &lt;-
 <p>To generate the smoothed median for each age group, you choose between a 1st, 2nd, or 3rd-order polynomial equation as the smoothing forumula. The code generates fitted plots for each of these models, showing the regression coefficients and R<sup>2</sup> for each, allowing you to choose the appropriate model. The 3rd-order polynomial usually provides the best fit. You can also inspect the plots for the 2nd- and 1st-order polynomials, to determine if a reasonably good fit can be achieved with a more parsimonius model.</p>
 <p>For the lo_SDs and hi SDs, the code produces plots of the 1st-order (straight line) model and the mean substitution (horizontal line) model. Again, you select the model by examining the plots and judging which model best fits the data.</p>
 <p>Model selection is done via an interactive session. The console lists the model choices and prompts you to examine the plots and make a selection, successively for median, lo_SD, and hi_SD. In order for this interactive feature to work, the entire script must be executed from source, using <code>command-shift-S</code>.</p>
-<div id="valid-code-to-run-8" class="section level6">
+<div id="valid-code-to-run-9" class="section level6">
 <h6>VALID CODE TO RUN</h6>
 <pre class="r"><code>rm(ANT_tot_age_lo1lo2_hi1hi2, ANTraw_by_agestrat, norm_build1)
 
@@ -754,17 +941,17 @@ print(med_plots)
 
 model_median_1st &lt;- function() {
   lm(median ~ group, data = norm_build_med_hilo_sum) %&gt;% assign('model_median', ., envir = .GlobalEnv)
-  get_regression_points(model_median) %&gt;% pull(median_hat) %&gt;% assign('median_sm', ., envir = .GlobalEnv)
+  get_regression_points(model_median, digits = 6) %&gt;% pull(median_hat) %&gt;% assign('median_sm', ., envir = .GlobalEnv)
 }
 
 model_median_2nd &lt;- function() {
   lm(median ~ group + I(group ^ 2), data = norm_build_med_hilo_sum) %&gt;% assign('model_median', ., envir = .GlobalEnv)
-  get_regression_points(model_median) %&gt;% pull(median_hat) %&gt;% assign('median_sm', ., envir = .GlobalEnv)
+  get_regression_points(model_median, digits = 6) %&gt;% pull(median_hat) %&gt;% assign('median_sm', ., envir = .GlobalEnv)
 }
 
 model_median_3rd &lt;- function() {
   lm(median ~ group + I(group ^ 2) + I(group ^ 3), data = norm_build_med_hilo_sum) %&gt;% assign('model_median', ., envir = .GlobalEnv)
-  get_regression_points(model_median) %&gt;% pull(median_hat) %&gt;% assign('median_sm', ., envir = .GlobalEnv)
+  get_regression_points(model_median, digits = 6) %&gt;% pull(median_hat) %&gt;% assign('median_sm', ., envir = .GlobalEnv)
 }
 
 model_prompt_median &lt;- function() {
@@ -799,7 +986,7 @@ model_prompt_median()</code></pre>
 </div>
 <div id="plot-imputed-medians-with-fitted-regression-lines" class="section level4">
 <h4>Plot imputed medians with fitted regression lines</h4>
-<div id="commented-code-chunks-6" class="section level6">
+<div id="commented-code-chunks-7" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
 <p>Clean up environment by dropping superfluous tables.</p>
 <pre class="r"><code>rm(ANT_tot_age_lo1lo2_hi1hi2, ANTraw_by_agestrat, norm_build1)</code></pre>
@@ -844,14 +1031,14 @@ lo_hi &lt;- c('lo_SD', 'hi_SD')</code></pre>
 <div id="generate-smoothed-estimated-medians-for-three-linear-models" class="section level4">
 <h4>Generate smoothed (estimated) medians for three linear models</h4>
 <p>As noted in the previous section, the norming process continues with the choice of models to smooth out the inter-age group variability in the imputed medians. In the smoothing process, <code>group</code> is used to predict (estimate) the smoothed values for the imputed medians. The regression coefficients from the selected linear model are used to generate the smoothed values for each age group. <code>group</code> is used as a linear, equal-interval proxy for the ordinal sequence of <code>agestrat</code> labels. Somewhat counterintuitively, the imputed values of median are <em>not</em> used to estimate the smoothed values of those same variables. Using <code>group</code> as the independent variable in the linear models provides the desired smoothed values.</p>
-<div id="commented-code-chunks-7" class="section level6">
+<div id="commented-code-chunks-8" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
 <p>The script contains three named functions (<code>model_median_1st</code>, <code>model_median_2nd</code>, <code>model_median_3rd</code>) that return vectors holding estimated (smoothed) medians for the 1st-, 2nd-, and 3rd-order polynomial formulas. Because the three functions are analogous, only the 3rd-order function is documented in detail.</p>
 <p><code>model_median_3rd</code> is a function whose body contains two operations. The first operation is the estimation of the linear model using <code>lm</code>. The first argument of <code>lm</code> specifies the terms of the 3rd-order polynomial formula, in which <code>group</code> is used to predict <code>median</code>. The second argument of <code>lm</code>, <code>data =</code>, specifies that the input values for model estimation are taken from the summary table <code>norm_build_med_hilo_sum</code> created by upstream code. The output of <code>lm</code> is piped into <code>assign</code>, whose first argument specifies a named object <code>model_median</code> to hold the model ouput. The second argument of <code>assign</code>, <code>.</code>, specifies that the piped input will be assigned to <code>model_median</code>, and the third argument <code>envir = .GlobalEnv</code> specifies that <code>model_median</code> will be available in the global environment, where it can be processed in downstream functions.</p>
 <p>The second operation of <code>model_median_3rd</code> creates a numerical vector <code>median_sm</code> that holds the smoothed (predicted) median values across the levels of <code>agestrat</code>. <code>moderndive::get_regression_points</code> extracts the regression coefficients from <code>model_median</code> and uses them to generate the smooted medians. The output of <code>get_regression_points</code> is a tibble in which one column <code>median_hat</code> contains the smoothed medians. This output is piped through <code>dplyr::pull</code> which extracts the medians column, which is assigned to <code>median_sm</code>.</p>
 <pre class="r"><code>model_median_3rd &lt;- function() {
   lm(median ~ group + I(group ^ 2) + I(group ^ 3), data = norm_build_med_hilo_sum) %&gt;% assign('model_median', ., envir = .GlobalEnv)
-  get_regression_points(model_median) %&gt;% pull(median_hat) %&gt;% assign('median_sm', ., envir = .GlobalEnv)
+  get_regression_points(model_median, digits = 6) %&gt;% pull(median_hat) %&gt;% assign('median_sm', ., envir = .GlobalEnv)
 }</code></pre>
 <p><br></p>
 </div>
@@ -861,7 +1048,7 @@ lo_hi &lt;- c('lo_SD', 'hi_SD')</code></pre>
 <p>Previous code plotted imputed medians vs. agestrats, and fit 1st-, 2nd-, and 3rd-order polynomial regression lines to the imputed medians. This code also created functions that generate the estimated (smoothed) medians associated with each of these models.</p>
 <p>When sourced, the script generates the plots and prompts you to examine the plots and enter a choice for smoothing model at the console. The next set of snippets encodes a function that lists the model choices on the console and prompts you to select a model by entering its number. The smoothed medians associated with the selected model are thereby incorporated in all downstream code.</p>
 <p>This interactive session can only be executed from source by entering <code>command-shift-S</code>. The code cannot be run as an isolated block using <code>command-enter</code>; this mode of execution won’t pause and wait for user input.</p>
-<div id="commented-code-chunks-8" class="section level6">
+<div id="commented-code-chunks-9" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
 <p>The function that enables this interactive session is designated <code>model_prompt_median</code>. <code>writeLines</code> prints user instructions for model selection to the console as a numbered list, using the escape character <code>\n</code> to insert line breaks in the printed text.</p>
 <pre class="r"><code>model_prompt_median &lt;- function() {
@@ -875,7 +1062,7 @@ lo_hi &lt;- c('lo_SD', 'hi_SD')</code></pre>
 <p>Within the <code>while</code> loop, <code>model_choice</code> is respecified to read user input from the console. <code>readline</code> allows the specification of a prompt at the console, and reads user input, which is then assigned to <code>model_choice</code>. Wrapping <code>readline</code> in <code>suppressWarnings</code> keeps the printed text on the console clean and readable.</p>
 <pre class="r"><code>    model_choice &lt;-
       suppressWarnings(as.numeric(readline(prompt = &quot;Enter choice: &quot;)))</code></pre>
-<p><code>if</code>-<code>else</code> statements control the flow of operations within the loop. The first <code>if</code> statement specifies that if <code>model_choice</code> is <code>NA</code> (i.e., the user enters a non-permitted keystroke(s) at the console), <code>writeLines</code> prints a reminder to enter a permitted keystroke, and then control returns to the beginning of the loop, where <code>readlines</code> again prompts the user to enter a model choice.</p>
+<p><code>if</code>-<code>else</code> statements control the flow of operations within the loop. The first <code>if</code> statement specifies that if <code>model_choice</code> is <code>NA</code> (i.e., the user enters a non-permitted keystroke(s) at the console), <code>writeLines</code> prints a reminder to enter a permitted keystroke, and then control returns to the beginning of the loop, where <code>readline</code> again prompts the user to enter a model choice.</p>
 <pre class="r"><code>    if (is.na(model_choice)) {
       writeLines(&quot;Please enter 1, 2, or 3\n&quot;)</code></pre>
 <p>Next comes a nested logical flow that is subsumed under <code>else</code>. When control enters the nested flow, the logical condition is that <code>model_choice</code> is <em>not</em> <code>NA</code>. The nested <code>if</code>-<code>else</code> statements control what happens when the user enters a permitted choice (i.e., the value of <code>model_choice</code> is 1, 2, or 3). Under each of these three conditions (specified by sequential <code>if</code>-<code>else if</code>-<code>else if</code> commands), the smoothed median function associated with a particular value of <code>model_choice</code> is called, followed by <code>break</code> which causes control to exit the loop and continue into downstream code. Thus, the <code>model_median_prompt</code> function prompts the user to select a model at the console, repeats the prompt when a non-permitted choice is entered, and ultimately executes one of three smoothed median estimation functions and makes the output of that function available to downstream code.</p>
@@ -901,7 +1088,7 @@ lo_hi &lt;- c('lo_SD', 'hi_SD')</code></pre>
 <h4>Estimate smoothed lo_SDs, hi_SDs</h4>
 <p>The code for estimating smoothed values for the lo_SDs and hi_SDs is analogous to that detailed above for the smoothed medians. The operations flow from plotting the imputed values with lines for 1st-order polynomial and mean-subsitution smoothing models, to initializing functions that will smooth the SDs based on these two models, to using an interactive session to select the smoothing models for the SDs. This process is completed first for the lo_SDs, and then for the hi_SDs. This section of code concludes by generating the summary table that is used in downstream norming processes, and removing unneeded objects from the global environment.</p>
 <p>The code is only documented in detail where it differs from previous code.</p>
-<div id="valid-code-to-run-9" class="section level6">
+<div id="valid-code-to-run-10" class="section level6">
 <h6>VALID CODE TO RUN</h6>
 <pre class="r"><code>lo_SD_1st_plot &lt;-
   ggplot(norm_build_med_hilo_sum, aes(x = group, y = lo_SD)) +
@@ -954,7 +1141,7 @@ print(lo_SD_mean_plot)
 
 model_lo_SD_1st &lt;- function() {
   lm(lo_SD ~ group, data = norm_build_med_hilo_sum) %&gt;% assign('model_lo_SD', ., envir = .GlobalEnv)
-  get_regression_points(model_lo_SD) %&gt;% pull(lo_SD_hat) %&gt;% assign('lo_SD_sm', ., envir = .GlobalEnv)
+  get_regression_points(model_lo_SD, digits = 6) %&gt;% pull(lo_SD_hat) %&gt;% assign('lo_SD_sm', ., envir = .GlobalEnv)
 }
 
 model_lo_SD_mean &lt;- function() {
@@ -1038,7 +1225,7 @@ print(hi_SD_mean_plot)
 
 model_hi_SD_1st &lt;- function() {
   lm(hi_SD ~ group, data = norm_build_med_hilo_sum) %&gt;% assign('model_hi_SD', ., envir = .GlobalEnv)
-  get_regression_points(model_hi_SD) %&gt;% pull(hi_SD_hat) %&gt;% assign('hi_SD_sm', ., envir = .GlobalEnv)
+  get_regression_points(model_hi_SD, digits = 6) %&gt;% pull(hi_SD_hat) %&gt;% assign('hi_SD_sm', ., envir = .GlobalEnv)
 }
 
 model_hi_SD_mean &lt;- function() {
@@ -1079,14 +1266,14 @@ smooth_med_SD &lt;-
 
 rm(list = ls()[!ls() %in% c(&quot;smooth_med_SD&quot;, &quot;model_median&quot;, &quot;model_lo_SD&quot;, &quot;model_hi_SD&quot;)])</code></pre>
 </div>
-<div id="commented-code-chunks-9" class="section level6">
+<div id="commented-code-chunks-10" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
 <p>The mean-subsitution model smooths the SDs by substituting their mean for every imputed value. The lo_SD mean is generated by the following code (taking the mean of the column of imputed lo_SD values, specified by <code>norm_build_med_hilo_sum$lo_SD</code>). The value is assigned to <code>mean_lo_SD</code>, a numerical vector of length 1.</p>
 <pre class="r"><code>mean_lo_SD &lt;- round(mean(norm_build_med_hilo_sum$lo_SD), 2)</code></pre>
 <p>The next two lines are part of the <code>ggplot</code> call to add a horizontal line to the mean-substitution plot. That line is layered on by <code>geom_hline</code>, which draws a horizontal line at the value of <code>mean_lo_SD</code> using the <code>yintercept</code> argument. <code>geom_label</code> applies a label to the line with the value of the mean (the first argument of <code>aes</code>, 5, refers to the position of the label relative to the line).</p>
 <pre class="r"><code>  geom_hline(yintercept = mean_lo_SD) +
   geom_label(aes(5, mean_lo_SD, label = paste0(&quot;Mean lo_SD = &quot;, mean_lo_SD)))</code></pre>
-<p>The next snippet addresses the fact that the output of model choice for lo_SD (and hi_SD) can be either a linear model or a constant (mean of SDs). Downstream code needs either type of output to be an object named <code>model_lo_SD</code>. <code>enframe</code> puts the constant into a 1x1 tibble, <code>name = NULL</code> gets rid of an unneeded column, and <code>value</code> controls the name of the one remaining column. Downstream, a logical gate controls the code applied to <code>model_lo_SD</code>, depending on whether that object contains the linear model or the tibble.</p>
+<p>The next snippet addresses the fact that the output of model choice for lo_SD (and hi_SD) can be either a linear model or a constant (mean of SDs). Downstream code needs either type of output to be in an object named <code>model_lo_SD</code>. <code>enframe</code> puts the constant into a 1x1 tibble, <code>name = NULL</code> gets rid of an unneeded column, and <code>value</code> controls the name of the one remaining column. Downstream, a logical gate controls the code applied to <code>model_lo_SD</code>, depending on whether that object contains the linear model or the tibble.</p>
 <pre class="r"><code>model_lo_SD_mean &lt;- function() {
   norm_build_med_hilo_sum %&gt;% mutate(mean_lo_SD = mean_lo_SD) %&gt;% pull(mean_lo_SD) %&gt;% assign('lo_SD_sm', ., envir = .GlobalEnv)
   enframe(mean(norm_build_med_hilo_sum$lo_SD), name = NULL, value = &quot;model_lo_SD&quot;) %&gt;% assign('model_lo_SD', ., envir = .GlobalEnv)

@@ -1,10 +1,15 @@
-suppressMessages(library(here))
-library(reshape2)
-suppressMessages(library(moderndive))
-library(magrittr)
+# Generate norms for test scores with age-related developmental curve.
+
+#$$$$$$$$$$$NOTE: LIBRARY CODE BELOW NOT PROPIGATED TO MARKDOWN OR CASL-2 SCRIPTS
+suppressMessages(library(here)) # BEST WAY TO SPECIFY FILE PATHS
+library(reshape2) # RESHAPE DATA FROM WIDE TO TALL
+library(broom) # TIDY MODEL OUTPUTS
+suppressMessages(library(moderndive)) # USER-FRIENDLY LINEAR MODELING, REGRESSION AND CORRELATION TOOLS.
+# note use of `suppressWarnings` to silence chatter during interactive session
+library(magrittr) # PIPE OPERATORS
 suppressMessages(suppressWarnings(library(tidyverse)))
-suppressMessages(library(ggpmisc))
-library(ggrepel)
+suppressMessages(library(ggpmisc)) # EXTENSIONS TO ggplot2: ADD EQUATIONS AND FIT STATISTICS TO FITTED LINE PLOTS
+library(ggrepel) # MORE ggplot2 EXTENSIONS
 
 input_parameters_prompt <- function() {
   writeLines(
@@ -47,15 +52,50 @@ input_parameters_prompt <- function() {
 input_parameters_prompt()
 
 suppressMessages(
-  read_csv(
-    here(
-      paste0('INPUT-FILES/', input_file_name)
+    read_csv(
+      here(
+        paste0('INPUT-FILES/', input_file_name)
+        )
+      )
+    ) %>% 
+  mutate_at(
+    vars(
+      agestrat
+    ), ~ case_when(
+      .x == 5.0 ~ 60,
+      .x == 5.3 ~ 63,
+      .x == 5.6 ~ 66,
+      .x == 5.9 ~ 69,
+      .x == 6.0 ~ 72,
+      .x == 6.3 ~ 75,
+      .x == 6.6 ~ 78,
+      .x == 6.9 ~ 81,
+      .x == 7.0 ~ 84,
+      .x == 7.3 ~ 87,
+      .x == 7.6 ~ 90,
+      .x == 7.9 ~ 93,
+      .x == 8.0 ~ 96,
+      .x == 8.6 ~ 102,
+      .x == 9.0 ~ 108,
+      .x == 9.6 ~ 114,
+      .x == 10.0 ~ 120,
+      .x == 10.6 ~ 126,
+      .x == 11.0 ~ 132,
+      .x == 11.6 ~ 138,
+      .x == 12.0 ~ 144,
+      .x == 12.6 ~ 150,
+      .x == 13.0 ~ 156,
+      .x == 14.0 ~ 168,
+      .x == 15.0 ~ 180,
+      .x == 1618.0 ~ 192,
+      .x == 1921.0 ~ 228,
+      TRUE ~ NA_real_
     )
-  )
-) %>% 
+  ) %>% 
   group_by(agestrat) %>% 
-  assign(paste0(score_name, '_raw_by_agestrat'), ., envir = .GlobalEnv)
-num_agestrat <- length(unique(eval(as.name(paste0(score_name, '_raw_by_agestrat')))$agestrat))
+    assign(paste0(score_name, '_raw_by_agestrat'), ., envir = .GlobalEnv)
+num_agestrat <- length(unique(ANT_total_raw_by_agestrat$agestrat))
+#$$$$$$$$$$$
 
 eval(as.name(paste0(score_name, '_raw_by_agestrat'))) %>% count(!!as.name(score_name)) %>% 
   mutate(perc = round(100*(n/sum(n)), 4), cum_per = round(100*(cumsum(n)/sum(n)), 4), lag_tot = lag(!!as.name(score_name)), lag_cum_per = lag(cum_per)) %>% 

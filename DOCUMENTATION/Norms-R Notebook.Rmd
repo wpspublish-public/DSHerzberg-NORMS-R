@@ -19,41 +19,199 @@ This R Notebook (.rmd) contains chunks of runnable code along with detailed anal
 
 The HTML narrative is organized into sections reflecting discrete topics and operations in the R workflow. Each section has two parts:
 
-1. `VALID CODE TO RUN`: this code can be copy-and-pasted into your working R script. Before running, make sure that all file paths relating to input and output files are specified correctly for your local environment. __Note that all code in this Notebook was written for the Mac OS, so if you are working in Windows, you'll need to substitute `\` for `/` in file paths.__
+1. `VALID CODE TO RUN`: this code can be copy-and-pasted into your working R script. Before running, make sure that all file paths relating to input and output files are specified correctly for your local environment. __Note that all code in this Notebook was written for the Mac OS, so if you are working in Windows, you may need to substitute `\` for `/` in file paths.__
 2. `COMMENTED CODE CHUNKS`: these snippets provide the analysis and documentation of the code and workflow. The R code in these snippets is redundant with that in `VALID CODE TO RUN` section. Here, it serves merely to enhance the code documenatation, and is not meant to be run.
 
 <br>
 
-#### UTILIZING RStudio PROJECTS AND DIRECTORY PATHS:
-To keep your work organized, set up a project in RStudio, by clicking File -> New Project. You'll be asked to specify a working directory associated with the project. To facilitate running the code of this project easily, locate input files in a folder named `INPUT FILES`, within the working directory associated with this project. Also, create a folder named `OUTPUT FILES`, within the working directory associated with this project. As mentioned above, you need to make sure file paths in your script are specified correctly, in order to read input files and/or write output files.
+#### CREATE AN RStudio PROJECT WITH STANDARD FOLDER STRUCTURE:
+To keep your work organized, set up a project in RStudio, by clicking File -> New Project. You'll be asked to specify a working directory associated with the project. Create the following folders within the working directory:
+
+* `CODE`
+* `INPUT-FILES`
+* `OUTPUT-FILES`
+
+As mentioned above, you need to make sure file paths in your script are specified correctly, in order to read input files and/or write output files.
 
 <br>
 
-#### ESSENTIAL PACKAGES
+#### STARTING INPUT:
+The norming script requires two types of starting input: *data* and *parameters*.
 
-Packages are the add-on features and functions that give R its power and versatility. Refer to the script `Essential_Packages.R` for the latest list of packages to install in Rstudio, and load at the beginning of every script using `library()`.
+##### Input Data File 
+This file is a sample of cases with the raw score to be normed. It is required, and must be located in the `INPUT-FILES` folder, with the following specifications:
 
-To use the code in this notebook, install and run these packages:
+* __.csv__ format
+* Must have at least these **numeric** variables (columns): 
+     + `ID`: (exact spelling/capitalization)
+     + `agestrat`: (exact spelling/capitalization)
+     + name of raw score to be normed
+* `agestrat` coding: values are number of months equivalent to lower bound of each agestrat. Examples of coding:
+     + 0 months - 2 months = 0
+     + 03:05 = 3
+     + 1-2 years = 12
+     + 7-6 to 8-0 = 90
+     + 18-21 years = 216
+     
+##### Input Parameters
+The script allows you to enter the input parameters interactively at the console, or retrieve them from a saved file. The latter method is preferred because it reduces keyboard entry when running the script numerous times. The input parameters file must be located in the `INPUT-FILES` folder, with the following specifications:
+
+* Exact file name: `Input-Parameters.R`
+* Saved as an R script: copy code below into script and insert names/values where indicated (preserving quote marks where applicable)
+
+```{r input_parameters, eval=FALSE}
+input_file_name <- c('insert file name here')
+score_name <- c('insert score name here')
+max_raw <- insert maximum raw score value here
+min_raw <- insert minimum raw score value here
+```
+
+
+<br>
+
+#### PACKAGES
+
+To use the code in this Notebook, install these packages and load them using `library()`:
+
+* `here`: Robust method for specifying file paths
+* `reshape2`: Collapse columns to rows, vice versa
+* `moderndive`: User-friendly linear modeling, regression and correlation tools
+* `magrittr`: Pipe operators
+* `tidyverse`: Many essential packages for data wrangling, analysis (`tidyr`, `dplyr`, `purrr`, `ggplot2`, `readr`, etc.)
+* `ggpmisc`: Add equations, fit statistics to line plots
+* `ggrepel`: more `ggplot2` extensions
+
+In this Notebook, the double-colon `::` notation is used to identify a function's source package (e.g., `base::eval()`, `dplyr::select()`, etc.)
 
 ###### VALID CODE TO RUN
 ```{r packages, message=FALSE}
-suppressMessages(library(here)) # BEST WAY TO SPECIFY FILE PATHS
-library(broom) # TIDY MODEL OUTPUTS
-library(moderndive) # USER-FRIENDLY LINEAR MODELING, REGRESSION AND CORRELATION TOOLS.
-library(magrittr) # PIPE OPERATORS
-# note use of `suppressWarnings` to silence chatter during interactive session
+suppressMessages(library(here))
+library(reshape2)
+suppressMessages(library(moderndive))
+library(magrittr)
 suppressMessages(suppressWarnings(library(tidyverse)))
-suppressMessages(library(ggpmisc)) # EXTENSIONS TO ggplot2: ADD EQUATIONS AND FIT STATISTICS TO FITTED LINE PLOTS
-library(ggrepel) # MORE ggplot2 EXTENSIONS
+suppressMessages(library(ggpmisc))
+library(ggrepel)
 ```
-Note use of `suppressMessages` to silence chatter during startup; and use of `suppressWarnings` to silence chatter during interactive session.
+Note use of `base::suppressMessages()` to silence chatter during startup; and use of `base::suppressWarnings()` to silence chatter during interactive session.
 
 <br>
 
 #### CODE OVERVIEW
-This script takes as input a .csv with all cases in the normative sample. Required columns are ID, age group, and score for the variable to be normed. This example uses the total score from the Antonyms test (ANT) of the CASL-2. To run this code, copy this input file to the `INPUT FILES ` folder in your R project working directory: 
+This script takes as input a table containing cases of a raw score to be normed. It is assumed that the score has an age-related developmental progression, and requires ages-stratified norms. The input table is transformed through the following stages of the norming process:
 
-`WPS_DEPT\Research & Development\Projects\CASL-2\pd\DSH DOCS\CASL-2 NORMS\ANT\ANTraw_STAND.csv`
+* Read in and examine data: raw score descriptive statistics, histograms, plots
+* Select cumulative percentage points to normalize the raw score distribution within each age group (`agestrat`)
+* Impute normalized medians by `agestrat`, split SD into `lo` and `hi` components
+* Use linear modeling to smooth medians, lo SDs, and hi SDs
+* Impute new age groups to compensate for larger-than-expected raw score changes between adjacent groups (optional)
+* Adjust smoothed medians, SDs by hand to correct score reversals, compensate for floor/ceiling effects (optional)
+* Generate publication-ready raw-to-standard-score lookup tables
+
+<br>
+
+#### Select method for entering input parameters; read input dataa
+
+###### VALID CODE TO RUN
+```{r input, eval=FALSE}
+input_parameters_prompt <- function() {
+  writeLines(
+    "To initiate the norming process, R requires certain input parameters. Please choose a method for entering these parameters:\n\n1: Interactively at the console\n2: From a file named 'Input-Parameters.R' located in '[PROJECT DIRECTORY]/INPUT-FILES'\n"
+  )
+  input_choice <- as.numeric(0)
+  while (is.na(input_choice) || (!(input_choice %in% 1:2))) {
+    input_choice <-
+      suppressWarnings(as.numeric(readline(prompt = "Enter choice: ")))
+    if (is.na(input_choice)) {
+      writeLines("Please enter 1 or 2\n")
+    } else {
+      if (input_choice == 1) {
+        cat("Enter the name of the input file, including the .csv suffix.\nUse exact spelling and capitalization.")
+        suppressWarnings(as.character(
+          readline(prompt = "Input file: ")
+        )) %>% assign('input_file_name', ., envir = .GlobalEnv)
+        cat("\nEnter the column name of the score to be normed.\nUse exact spelling and capitalization.")
+        suppressWarnings(as.character(
+          readline(prompt = "Score name: ")
+        )) %>% assign('score_name', ., envir = .GlobalEnv)
+        cat("\nEnter the HIGHEST possible raw score for the score to be normed.")
+        suppressWarnings(as.integer(
+          readline(prompt = "Maximum raw score: ")
+        )) %>% assign('max_raw', ., envir = .GlobalEnv)
+        cat("\nEnter the LOWEST possible raw score for the score to be normed.")
+        suppressWarnings(as.integer(
+          readline(prompt = "Minimum raw score: ")
+        )) %>% assign('min_raw', ., envir = .GlobalEnv)
+        break
+      } else if (input_choice == 2) {
+        source(here('INPUT-FILES/Input-Parameters.R'))
+        break
+      } else {
+        writeLines("Please enter 1 or 2\n")
+      }
+    }
+  }
+}
+input_parameters_prompt()
+
+suppressMessages(
+  read_csv(
+    here(
+      paste0('INPUT-FILES/', input_file_name)
+    )
+  )
+) %>% 
+  group_by(agestrat) %>% 
+  assign(paste0(score_name, '_raw_by_agestrat'), ., envir = .GlobalEnv)
+num_agestrat <- length(unique(eval(as.name(paste0(score_name, '_raw_by_agestrat')))$agestrat))
+```
+###### COMMENTED CODE CHUNKS
+The script begins with an interactive session, where the user is prompted at the console to choose a method for entering input parameters. This interactive session can only be executed from source by entering `command-shift-S`. The code won't function properly if run as an isolated block using `command-enter`; this mode of execution won’t pause and wait for user input.
+
+`base::function()` creates a function to run this interactive session. The function is assigned `<-` the name `input_parameters_prompt`. `base::writeLines` prints a numbered list of user instructions to the console, using the escape character `\n` to insert line breaks in the displayed text. The user can choose to enter input parameters interactively at the console, or load them from a file located in a specifc directory in the R project folder structure.
+```{r input, echo=1:4, eval=FALSE}
+```
+
+`input_choice` is initialized as a numeric vector with placeholder value of 0. Within the function `input_parameters_prompt`, `input_choice` will hold the numerical value that the user enters when prompted by the console instructions. The value of `input_choice` controls the flow of logic within `input_parameters_prompt`; its value determines which input parameter entry method will be utilized. 
+
+Note that the assignment operator `<-` is used to initialize `input_choice`, rather than the `base::assign()` function that is used elsewhere inside script-defined functions. The reason for this is that `input_choice` is a temporary variable that is not utilized outside of the body of this particular function. Thus, it does not need to be made available in the global environment. When `<-` is used within the body of a function, the object thereby created is avaiable only in the local environment of that function. In this instance, we can get away with using `<-` because `input_choice` is not needed in the global environment.
+```{r input, echo=5, eval=FALSE}
+```
+The code for input parameter entry method is called and executed within a `while` loop, which iterates as long as a compound logical condition is met (logical "or" `||`). This condition is specified by `is.na(input_choice) || (!(input_choice %in% 1:2)`, which tells the `while` loop to keep iterating as long as the value of `model_choice` is anything other than 1 or 2 (i.e., the user enters a non-permitted value at the console). Thus, if the user enters an integer other than 1 or 2, or any other keystroke(s), including `enter` without an entry, the loop will continue to iterate and control will _not_ be passed to downstream code. `is.na(model_choice)` is included in this compound condition because any keystroke other than 1 or 2 is coerced to `NA` (R code for missing) within this function. Thus, the loop keeps iterating if the function returns `NA`.
+```{r input, echo=6, eval=FALSE}
+```
+Within the `while` loop, `input_choice` is respecified to read user input from the console. `base::readline()` allows the specification of a prompt at the console, and reads user keystroke input, which is then assigned to `input_choice`. Wrapping `readline` in `suppressWarnings` keeps the displayed text on the console clean and readable.
+```{r input, echo=7:8, eval=FALSE}
+```
+`if`-`else` statements control the flow of operations within the loop. The first `if` statement specifies that if `input_choice` is `NA` (i.e., the user enters a non-permitted keystroke(s) at the console), `writeLines` prints a reminder to enter a permitted keystroke, and then control returns to the beginning of the loop, where `readline` again prompts the user to enter a model choice.
+```{r input, echo=9:10, eval=FALSE}
+```
+Next comes a nested logical flow that is subsumed under `else`. When control enters the nested flow, the logical condition is that `input_choice` is _not_ `NA`. The nested `if`-`else` statements control what happens when the user enters a permitted choice (i.e., the value of `input_choice` is 1 or 2). Under the first of these conditions (specified by `if (input_choice == 1)`), the user is prompted to enter the four input parameters (`input_file_name`, `score_name`, `max_raw`, `min_raw`) at the console. The instructions for entry are printed to the screen by callling `base::cat()`, which converts its arguments to character vectors and displays them on the screen. `readline()` is used to capture user input, which is then sent to `assign()` using the pipe operator `%>%`. `assign` names the input object and makes it available in the global environment for downstream code.
+
+Under the second condition (defined by `else if (input_choice == 2)`), the input parameters are read in from a preconfigured R script (`Input-Parameters.R`, created with instructions given earlier in this Notebook). `base::source()` is used to execute this script, from the location given by `here('INPUT-FILES/Input-Parameters.R')`, which provides a directory path from the R project folder.
+
+The `if` and `else if` conditions are followed by `break` which causes control to exit the loop and continue into downstream code. Thus, the `input_parameters_prompt` function prompts the user to select a method of input parameter entry, repeats the prompt when a non-permitted keystroke is entered, and ultimately executes one of two entry methods and makes the output of the selected method available to downstream code.
+```{r input, echo=11:32, eval=FALSE}
+```
+A final `else` condition is triggered by any user input not subsumed under the prior logical conditions. It reprompts the user, and returns control to the beginning of the loop. As noted above, the loop will only stop running if the user enters 1 or 2.
+```{r input, echo=33:34, eval=FALSE}
+```
+`input_parameters_prompt` is called with empty parentheses `()` because it takes no arguments. The function simply executes the code within its body, it does not depend on any input values specified in the function call.
+```{r input, echo=39, eval=FALSE}
+```
+The next snippet reads the input date file (normative sample) using `readr::read_csv`. The file path within `here::here()` is concatenated with `paste0()`, which joins a static string with the character vector `input_file_name`, an input parameter initialized by upstream code.
+```{r input, echo=41:47, eval=FALSE}
+```
+The input data file is piped forward into `dplyr::group_by`, which groups the rows according to their values on `agestrat` (the grouping will be utilized by downstream processes). The data file is then saved as an object in the global environment using `assign()`. Within the `assign` call, the first argument is the object name, which is a string concatenated by `paste0()`, joining the input parameter `score_name` with a static suffix `_raw_by_agestrat`. The second argument of `assign` is the piped-in data file, which is denoted by the dot token `.`. The third argument of `assign` designates the destination environment `.GlobalEnv`.
+```{r input, echo=48:49, eval=FALSE}
+```
+At this point it is useful to extract a key value used throughout downstream code: the number of age groups in the input data file. This value is assigned to `num_agestrat`. The desired value can be extracted from the `agestrat` column of the input data file, which is now named by the string `paste0(score_name, '_raw_by_agestrat')`. 
+
+Once the data file is named by a concatenated string in this way, we must force R to evaluate the name not as a string, but as the name of an object in the global environment. We accomplish this by wrapping the file name in `eval(as.name())`. `base::as.name` coerces its argument to an object name. `base::eval` forces R to evaluate its argument, in this case returning an object name which can be processed by other functions. Appending this name with the suffix `$agestrat` specifies that we want to process a single column, not the entire table (`$` is a column-subsetting operator).
+
+So identified, the target column contains values of `agestrat` for every case in the input data file. Wrapping the column name in `base::unique()` returns only the unique values of `agestrat` in the form of a numerical vector. Using `base::length()` we return the length of this vector (the number of values it contains), i.e., the number of age groups, which is the value we seek for `num_agestrat`.
+```{r input, echo=50, eval=FALSE}
+```
 
 <br>
 
@@ -613,7 +771,7 @@ The selected smoothed median estimation function is called and executed within a
 Within the `while` loop, `model_choice` is respecified to read user input from the console. `readline` allows the specification of a prompt at the console, and reads user input, which is then assigned to `model_choice`. Wrapping `readline` in `suppressWarnings` keeps the printed text on the console clean and readable.
 ```{r plot_model_med, echo=66:67, eval=FALSE}
 ```
-`if`-`else` statements control the flow of operations within the loop. The first `if` statement specifies that if `model_choice` is `NA` (i.e., the user enters a non-permitted keystroke(s) at the console), `writeLines` prints a reminder to enter a permitted keystroke, and then control returns to the beginning of the loop, where `readlines` again prompts the user to enter a model choice.
+`if`-`else` statements control the flow of operations within the loop. The first `if` statement specifies that if `model_choice` is `NA` (i.e., the user enters a non-permitted keystroke(s) at the console), `writeLines` prints a reminder to enter a permitted keystroke, and then control returns to the beginning of the loop, where `readline` again prompts the user to enter a model choice.
 ```{r plot_model_med, echo=68:69, eval=FALSE}
 ```
 Next comes a nested logical flow that is subsumed under `else`. When control enters the nested flow, the logical condition is that `model_choice` is _not_ `NA`. The nested `if`-`else` statements control what happens when the user enters a permitted choice (i.e., the value of `model_choice` is 1, 2, or 3). Under each of these three conditions (specified by sequential `if`-`else if`-`else if` commands), the smoothed median function associated with a particular value of `model_choice` is called, followed by `break` which causes control to exit the loop and continue into downstream code. Thus, the `model_median_prompt` function prompts the user to select a model at the console, repeats the prompt when a non-permitted choice is entered, and ultimately executes one of three smoothed median estimation functions and makes the output of that function available to downstream code.
