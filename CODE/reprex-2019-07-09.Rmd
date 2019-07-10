@@ -63,3 +63,10 @@ To create this output, the input needs to be transformed in several ways:
   a. a dash '-' for values of `SS` with no corresponding value of `raw` (e.g., SS = 70)
   b. a single value (e.g., '2') for values of `SS` with a single corresponding value of `raw` (e.g., SS = 80)
   c. a range of values (e.g., '3-5') for values of `SS` with multiple corresponding values of `raw` (e.g., SS = 83)
+  
+It's easy enough to create the basic framework for this output table:
+
+```
+interim <- tibble(SS = 100:70, raw = '-')
+
+```

@@ -55,3 +55,23 @@ output <- tribble(
   71, '-',
   70, '-'
 )
+
+
+df1_output <- input %>% select(
+  SS, raw
+    ) %>% 
+  complete(
+      SS = 70:100
+      ) %>% 
+  arrange(
+      desc(
+        SS
+        )
+      ) %>% 
+  mutate_at(
+    vars(
+      raw
+    ), ~ case_when(
+      is.na(.x) ~ '_'
+    )
+  )
