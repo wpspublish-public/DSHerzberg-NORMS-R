@@ -1,10 +1,10 @@
-suppressMessages(library(here))
-library(reshape2)
-suppressMessages(library(moderndive))
-library(magrittr)
+# suppressMessages(library(here))
+# library(reshape2)
+# suppressMessages(library(moderndive))
+# library(magrittr)
 suppressMessages(suppressWarnings(library(tidyverse)))
-suppressMessages(library(ggpmisc))
-library(ggrepel)
+# suppressMessages(library(ggpmisc))
+# library(ggrepel)
 
 
 input <- tribble(
@@ -55,3 +55,29 @@ output <- tribble(
   71, '-',
   70, '-'
 )
+
+
+interim <- input %>% select(
+  SS, raw
+    ) %>% 
+  mutate_at(
+    vars(
+      raw
+      ), ~ as.character(.x)
+    ) %>% 
+  complete(
+      SS = 70:100
+      ) %>% 
+  arrange(
+      desc(
+        SS
+        )
+      ) %>% 
+  mutate_at(
+    vars(
+      raw
+    ), ~ case_when(
+      is.na(.x) ~ '-',
+      TRUE ~ .x
+    )
+  )

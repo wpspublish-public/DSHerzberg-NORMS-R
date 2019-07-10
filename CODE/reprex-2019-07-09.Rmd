@@ -1,4 +1,4 @@
-The input table is a lookup with two numeric columns. `raw` has a many-to-one relationship with `SS`. Many values of `raw` can have the same value of of `SS`, but not vice-versa.
+Here is a simplified representation of a transformation that I need to apply to a large complex table. Here, the input table is a lookup with two numeric columns. `raw` has a many-to-one relationship with `SS`. Many values of `raw` can have the same value of of `SS`, but not vice-versa.
 
 
 ```
@@ -57,9 +57,41 @@ output <- tribble(
 ```
 
 To create this output, the input needs to be transformed in several ways:
-1. columns reordered with dplyr::select()
-2. `SS` column becomes 100:70
-3. `raw` column becomes character, with three types of values to preserve many-to-one of raw-SS:
+1. columns reordered
+2. `SS` column filled out (100:70) and sorted descending
+3. `raw` column coerced to character, with three types of values to preserve many-to-one relationship of raw-SS:
   a. a dash '-' for values of `SS` with no corresponding value of `raw` (e.g., SS = 70)
   b. a single value (e.g., '2') for values of `SS` with a single corresponding value of `raw` (e.g., SS = 80)
   c. a range of values (e.g., '3-5') for values of `SS` with multiple corresponding values of `raw` (e.g., SS = 83)
+
+Here's how far I've gotten with it:
+
+```
+interim <- input %>% select(
+  SS, raw
+    ) %>% 
+  mutate_at(
+    vars(
+      raw
+      ), ~ as.character(.x)
+    ) %>% 
+  complete(
+      SS = 70:100
+      ) %>% 
+  arrange(
+      desc(
+        SS
+        )
+      ) %>% 
+  mutate_at(
+    vars(
+      raw
+    ), ~ case_when(
+      is.na(.x) ~ '-',
+      TRUE ~ .x
+    )
+  )
+```
+If you run the above code, you'll see that the only remaining transformation  is to collapse the three `SS` = 83 rows into one, with a corresponding `raw` value of `3-5`. That means somehow recognizing that 3 and 5 are the lower and upper bounds of a range, because the solution will need to handle ranges of consecutive integers of any length.
+
+Thanks in advance for any help!
