@@ -56,8 +56,6 @@ output <- tribble(
   70, '-'
 )
 
-
-<<<<<<< HEAD
 interim <- input %>% select(
   SS, raw
     ) %>% 
@@ -66,11 +64,9 @@ interim <- input %>% select(
       raw
       ), ~ as.character(.x)
     ) %>% 
-=======
 df1_output <- input %>% select(
   SS, raw
     ) %>% 
->>>>>>> e3c8dd5f973f7d36a4f8d95c49c976ae61d3353b
   complete(
       SS = 70:100
       ) %>% 
@@ -86,8 +82,6 @@ df1_output <- input %>% select(
 <<<<<<< HEAD
       is.na(.x) ~ '-',
       TRUE ~ .x
-=======
       is.na(.x) ~ '_'
->>>>>>> e3c8dd5f973f7d36a4f8d95c49c976ae61d3353b
     )
   )
