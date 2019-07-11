@@ -93,15 +93,6 @@ interim <- input %>% select(
     )
   )
 ```
-If you run the above code, you'll see that the only remaining transformation  is to collapse the three `SS` = 83 rows into one, with a corresponding `raw` value of `3-5`. That means somehow recognizing that 3 and 5 are the lower and upper bounds of a range, because the solution will need to handle ranges of consecutive integers of any length.
+If you run the above code, you'll see that the only remaining transformation  is to collapse the three `SS` = 83 rows into one, with a corresponding `raw` value of `3-5`. That means somehow recognizing that 3 and 5 are the lower and upper bounds of a range, because the solution will need to handle ranges of consecutive integers of indeterminate length.
 
 Thanks in advance for any help!
-=======
-  
-It's easy enough to create the basic framework for this output table:
-
-```
-interim <- tibble(SS = 100:70, raw = '-')
-
-```
->>>>>>> e3c8dd5f973f7d36a4f8d95c49c976ae61d3353b
