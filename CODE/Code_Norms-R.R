@@ -756,7 +756,7 @@ mean_plot_compare_prompt ()
 
 
 # Clean up environment
-rm(list = ls()[!ls() %in% c("smooth_med_SD", "model_median", "model_lo_SD", "model_hi_SD", "score_name", 
+rm(list = ls()[!ls() %in% c("smooth_med_SD", "model_median", "model_lo_SD", "model_hi_SD", "score_name", "agestrat",
                             "num_agestrat", "max_raw", "min_raw", "scale_y_ceiling_mean", "scale_y_ceiling_SD", "mean_plot")])
 
 # Next code section can deal with situation where smoothed medians have effect
@@ -1136,7 +1136,7 @@ invisible(readline())
 
 
 # Clean up environment
-rm(list = ls()[!ls() %in% c("smooth_med_SD", "score_name", "num_agestrat", "max_raw", "min_raw", 
+rm(list = ls()[!ls() %in% c("smooth_med_SD", "score_name", "num_agestrat", "agestrat", "max_raw", "min_raw", 
                             "scale_y_ceiling_mean", "scale_y_ceiling_SD", "mean_plot")])
 
 # next code section generates raw-to-SS look-up tables.
