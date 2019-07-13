@@ -16,7 +16,17 @@ map(agestrat, ~ ant_norms %>%
       filter(n() == 1| n() > 1 & row_number()  %in% c(1, n())) %>% 
       summarise(raw = str_c(raw, collapse = '-')) %>%
       arrange(desc(SS)) %>%
+      rename(!!paste0('mo_', .x):=SS) %>%
       assign(paste0('raw_SS_', .x), ., envir = .GlobalEnv))
+
+file_names <- paste0('raw_SS_', agestrat)
+
+mylist <- lapply(file_names, get)
+
+norms_pub <- mylist %>% reduce(left_join, by = "raw")
+
+
+
 
 input <- ant_norms %>% select(rawscore, mo_60) %>% rename(raw=rawscore, SS=mo_60)
 
