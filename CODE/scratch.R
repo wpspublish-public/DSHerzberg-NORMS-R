@@ -15,38 +15,35 @@ map(agestrat, ~ ant_norms %>%
       select(rawscore, paste0('mo_', .x)) %>% 
       rename(SS=paste0('mo_', .x)) %>% 
       rename(!!paste0('mo_', .x):=rawscore) %>%
-      complete(SS = 40:160, fill = list(paste0('mo_', .x) = '-')) %>%
-      group_by(SS) %>% 
-      filter(n() == 1| n() > 1 & row_number()  %in% c(1, n())) %>% 
-      summarise(paste0('mo_', .x) = str_c(paste0('mo_', .x), collapse = '-')) %>%
-      # arrange(desc(SS)) %>%      
-      arrange(desc(paste0('mo_', .x))) %>%
-      # rename(!!paste0('mo_', .x):=SS) %>%
+      select(SS, paste0('mo_', .x)) %>% 
+      # complete(SS = 40:160, fill = list(!!paste0('mo_', .x) := '-')) %>%
+      complete(SS = 40:160) %>%
+      # replace_na(list(paste0('mo_', .x)), '-') %>%
+      group_by(SS) %>%
+      filter(n() == 1| n() > 1 & row_number()  %in% c(1, n())) %>%
+      # summarise(!!paste0('mo_', .x) := str_c(paste0('mo_', .x), collapse = '-')) %>%
+      summarise(!!paste0('mo_', .x) := str_c(eval(as.name(paste0('mo_', .x))), collapse = '-')) %>%
+      mutate_at(
+        vars(
+          paste0('mo_', .x)
+        ), ~ case_when(
+          is.na(.x) ~ '-',
+          TRUE ~ .x
+        )) %>% 
+      arrange(desc(SS)) %>%
       assign(paste0('raw_SS_', .x), ., envir = .GlobalEnv))
 
-# map(agestrat, ~ ant_norms %>% 
-#       select(rawscore, paste0('mo_', .x)) %>% 
-#       rename(raw=rawscore, SS=paste0('mo_', .x)) %>%
-#       complete(SS = 40:160, fill = list(raw = '-')) %>%
-#       group_by(SS) %>% 
-#       filter(n() == 1| n() > 1 & row_number()  %in% c(1, n())) %>% 
-#       summarise(raw = str_c(raw, collapse = '-')) %>%
-#       arrange(desc(SS)) %>%
-#       rename(!!paste0('mo_', .x):=SS) %>%
-#       assign(paste0('raw_SS_', .x), ., envir = .GlobalEnv))
 
-agestrat1 <- agestrat[1:2]
 
-file_names <- paste0('raw_SS_', agestrat1)
+# agestrat1 <- agestrat[1:2]
+
+file_names <- paste0('raw_SS_', agestrat)
 
 mylist <- lapply(file_names, get)
 
-norms_pub <- mylist %>% reduce(left_join, by = "raw")
+norms_pub <- mylist %>% reduce(left_join, by = "SS")
 
-norms_pub1 <- left_join(raw_SS_102, raw_SS_108, by = c('mo_102' = 'mo_108'))
-                        
-
-
+# EVERYTHING BEFORE HERE WORKS
 
 
 input <- ant_norms %>% select(rawscore, mo_60) %>% rename(raw=rawscore, SS=mo_60)
@@ -142,7 +139,6 @@ df1_output <- input %>% select(
     ), ~ case_when(
       is.na(.x) ~ '-',
       TRUE ~ .x
-      is.na(.x) ~ '_'
     )
   )
 
@@ -158,28 +154,40 @@ df1_output <- input %>% select(
 #       assign(paste0('raw_SS_', .x), ., envir = .GlobalEnv))
 
 
-map(agestrat, ~ ant_norms %>% 
-  select(rawscore, paste0('mo_', .x)) %>% 
-  rename(SS=paste0('mo_', .x)) %>% 
-  rename(!!paste0('mo_', .x):=rawscore) %>%
-  select(SS, paste0('mo_', .x)) %>% 
-  # complete(SS = 40:160, fill = list(!!paste0('mo_', .x) := '-')) %>%
-  complete(SS = 40:160) %>%
-  replace_na(list(paste0('mo_', .x)), '-') %>%
-  group_by(SS) %>%
-  filter(n() == 1| n() > 1 & row_number()  %in% c(1, n())) %>%
-  # summarise(!!paste0('mo_', .x) := str_c(paste0('mo_', .x), collapse = '-')) %>%
-  arrange(desc(SS)) %>%
-  assign(paste0('raw_SS_', .x), ., envir = .GlobalEnv))
 
-ant_norms %>%
-  select(rawscore, mo_60) %>%
-  rename(SS=mo_60) %>%
-  rename(mo_60=rawscore) %>% 
-  select(SS, mo_60) %>% 
-  complete(SS = 40:160, fill = list(mo_60 = '-')) %>%
-  group_by(SS) %>%
-  filter(n() == 1| n() > 1 & row_number()  %in% c(1, n())) %>%
-  summarise(mo_60 = str_c(mo_60, collapse = '-')) %>%
-  arrange(desc(SS)) %>%
-  assign('raw_SS_60', ., envir = .GlobalEnv)
+# ant_norms %>%
+#   select(rawscore, mo_60) %>%
+#   rename(SS=mo_60) %>%
+#   rename(mo_60=rawscore) %>% 
+#   select(SS, mo_60) %>% 
+#   complete(SS = 40:160, fill = list(mo_60 = '-')) %>%
+#   group_by(SS) %>%
+#   filter(n() == 1| n() > 1 & row_number()  %in% c(1, n())) %>%
+#   summarise(mo_60 = str_c(mo_60, collapse = '-')) %>%
+#   arrange(desc(SS)) %>%
+#   assign('raw_SS_60', ., envir = .GlobalEnv)
+
+# map(agestrat, ~ ant_norms %>% 
+#       select(rawscore, paste0('mo_', .x)) %>% 
+#       rename(SS=paste0('mo_', .x)) %>% 
+#       rename(!!paste0('mo_', .x):=rawscore) %>%
+#       complete(SS = 40:160, fill = list(paste0('mo_', .x) = '-')) %>%
+#       group_by(SS) %>% 
+#       filter(n() == 1| n() > 1 & row_number()  %in% c(1, n())) %>% 
+#       summarise(paste0('mo_', .x) = str_c(paste0('mo_', .x), collapse = '-')) %>%
+#       # arrange(desc(SS)) %>%      
+#       arrange(desc(paste0('mo_', .x))) %>%
+#       # rename(!!paste0('mo_', .x):=SS) %>%
+#       assign(paste0('raw_SS_', .x), ., envir = .GlobalEnv))
+
+# map(agestrat, ~ ant_norms %>% 
+#       select(rawscore, paste0('mo_', .x)) %>% 
+#       rename(raw=rawscore, SS=paste0('mo_', .x)) %>%
+#       complete(SS = 40:160, fill = list(raw = '-')) %>%
+#       group_by(SS) %>% 
+#       filter(n() == 1| n() > 1 & row_number()  %in% c(1, n())) %>% 
+#       summarise(raw = str_c(raw, collapse = '-')) %>%
+#       arrange(desc(SS)) %>%
+#       rename(!!paste0('mo_', .x):=SS) %>%
+#       assign(paste0('raw_SS_', .x), ., envir = .GlobalEnv))
+
