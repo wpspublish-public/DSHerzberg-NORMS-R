@@ -421,22 +421,29 @@ num_agestrat &lt;- length(unique(eval(as.name(paste0(score_name, '_raw_by_agestr
 <p><br></p>
 </div>
 </div>
-<div id="read-in-data-generate-frequency-tables-by-agestrat-descriptive-statistics-z-score-lookup-table" class="section level4">
-<h4>Read in data, generate frequency tables by agestrat, descriptive statistics, z-score lookup table</h4>
+<div id="examine-input-data-generate-frequency-tables-by-agestrat-descriptive-statistics-z-score-lookup-table" class="section level4">
+<h4>Examine input data, generate frequency tables by agestrat, descriptive statistics, z-score lookup table</h4>
 <div id="valid-code-to-run-2" class="section level6">
 <h6>VALID CODE TO RUN</h6>
-<pre class="r"><code>ANTraw_by_agestrat &lt;-
-  suppressMessages(read_csv(here('INPUT FILES/ANTraw_STAND.csv')
-  )) %&gt;% group_by(agestrat)
-ANT_tot_freq_agestrat &lt;- ANTraw_by_agestrat %&gt;% count(ANT_total) %&gt;% 
-  mutate(perc = round(100*(n/sum(n)), 4), cum_per = round(100*(cumsum(n)/sum(n)), 4), lag_tot = lag(ANT_total), lag_cum_per = lag(cum_per))
-ANT_tot_desc_agestrat &lt;-
-  ANTraw_by_agestrat %&gt;% arrange(agestrat) %&gt;% summarise(n = n(),
-                                                         median = round(median(ANT_total), 2),
-                                                         mean = round(mean(ANT_total), 2),
-                                                         sd = round(sd(ANT_total), 2)) %&gt;%
-  mutate(ES = round((mean - lag(mean))/((sd + lag(sd))/2),2), group = c(1:27))
-agestrat &lt;- ANT_tot_desc_agestrat %&gt;% pull(agestrat)
+<pre class="r"><code>eval(as.name(paste0(score_name, '_raw_by_agestrat'))) %&gt;% count(!!as.name(score_name)) %&gt;% 
+  mutate(perc = round(100*(n/sum(n)), 4), cum_per = round(100*(cumsum(n)/sum(n)), 4), lag_raw = lag(!!as.name(score_name)), lag_cum_per = lag(cum_per)) %&gt;% 
+  assign(paste0(score_name, '_freq_agestrat'), ., envir = .GlobalEnv)
+
+eval(as.name(paste0(score_name, '_raw_by_agestrat'))) %&gt;% arrange(agestrat) %&gt;% summarise(n = n(),
+                                                                                          median = round(median(eval(as.name(score_name))), 2),
+                                                                                          mean = round(mean(eval(as.name(score_name))), 2),
+                                                                                          sd = round(sd(eval(as.name(score_name))), 2)) %&gt;%
+  mutate(ES = round((mean - lag(mean))/((sd + lag(sd))/2),2), group = c(1:num_agestrat)) %&gt;% 
+  assign(paste0(score_name, '_desc_agestrat'), ., envir = .GlobalEnv)
+
+agestrat &lt;- eval(as.name(paste0(score_name, '_desc_agestrat'))) %&gt;% pull(agestrat)
+max_mean &lt;- max(eval(as.name(paste0(score_name, '_desc_agestrat')))$mean)
+max_SD &lt;- max(eval(as.name(paste0(score_name, '_desc_agestrat')))$sd)
+scale_y_break_options &lt;- seq(0, max_mean+(2*max_SD), 5)
+scale_y_ceiling_mean &lt;- scale_y_break_options[which.min(abs(scale_y_break_options - (max_mean+(2*max_SD))))]
+scale_y_ceiling_SD &lt;- scale_y_break_options[which.min(abs(scale_y_break_options - (max_SD+(max_SD/2))))]
+
+# Create Z score table
 perc_z &lt;- tribble(
   ~lohi_value,  ~z_score,
   5, 1.6449,
@@ -453,37 +460,44 @@ perc_z &lt;- tribble(
 </div>
 <div id="commented-code-chunks-1" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
-<p>Read in normative data with total scores for ANT. <code>here</code> locates files relative to project root folder. <code>suppressMessages</code> keeps console output clean. Data frame is piped into <code>dplyr::group_by</code> to group data by agestrat.</p>
-<pre class="r"><code>ANTraw_by_agestrat &lt;-
-  suppressMessages(read_csv(here('INPUT FILES/ANTraw_STAND.csv')
-  )) %&gt;% group_by(agestrat)</code></pre>
-<p>Generate frequency table <code>ANT_tot_freq_agestrat</code>. Pipe grouped normative data <code>ANTraw_by_agestrat</code> into <code>count(ANT_total)</code>, which yields two columns: one with all values of <code>ANT_total</code>, one <code>n</code> with number of cases per each value. Pipe these columns into <code>mutate</code>, which generates four more columns: <code>perc</code> = percentage of total cases for each value of <code>ANT_totalt</code>, <code>cum_per</code> = cumulative percentage over increasing values of <code>ANT_total</code>, and <code>lag_tot</code> and <code>lag_cum_per</code>, two ‘lag’ columns that provide values for these variables from previous row. These columns are rounded <code>round</code> to four decimal places.</p>
-<pre class="r"><code>ANT_tot_freq_agestrat &lt;- ANTraw_by_agestrat %&gt;% count(ANT_total) %&gt;% 
-  mutate(perc = round(100*(n/sum(n)), 4), cum_per = round(100*(cumsum(n)/sum(n)), 4), lag_tot = lag(ANT_total), lag_cum_per = lag(cum_per))
-ANT_tot_desc_agestrat &lt;-</code></pre>
-<p>Generate table of descriptive statistics <code>ANT_tot_desc_agestrat</code>. Pipe <code>ANTraw_by_agestrat</code> into <code>arrange</code>, to sort by agestrat, then into <code>summarise</code>, yielding a single-row table showing <code>mean</code>, <code>median</code>, <code>sd</code>, and <code>ES</code>, all rounded to two decimal places.</p>
-<pre class="r"><code>  ANTraw_by_agestrat %&gt;% arrange(agestrat) %&gt;% summarise(n = n(),
-                                                         median = round(median(ANT_total), 2),
-                                                         mean = round(mean(ANT_total), 2),
-                                                         sd = round(sd(ANT_total), 2)) %&gt;%
-  mutate(ES = round((mean - lag(mean))/((sd + lag(sd))/2),2), group = c(1:27))</code></pre>
+<p>This next code snippet generates a table of raw score frequencies by agestrat. The input data object is <code>eval(as.name(paste0(score_name, '_raw_by_agestrat')))</code>, which refers to the input normative data file read in by upstream code. <code>base::paste0()</code> concatenates <code>score_name</code> with a static suffix to create a string naming the data object. To coerce this string into an object name that R can evaluate, we wrap the string in <code>eval(as.name())</code> (both are <code>base</code> functions).</p>
+<p>The object is then piped into <code>dplyr::count()</code>, which yields two columns: <code>score_name</code>, containing all values of the raw score being normed, and <code>n</code>, containing the number of cases per each raw score value. Because <code>count</code>, like all <code>dplyr</code> functions, quotes its inputs, and <code>score_name</code> is a character vector containing a string, we coerce <code>score_name</code> into an object name using <code>as.name</code>, and unquote it using the <code>!!</code> operator. The important distinction is that <code>score_name</code> <em>refers</em> to the object we want to process (a column name), but <code>dplyr::count</code> cannot evaluate <code>scorename</code> as the column name until we wrap <code>score_name</code> in <code>as.name</code> and <code>!!</code>. In R, a string referring to an object is <em>not</em> equivalent to the object’s name - only the latter can be evaluated.</p>
+<p>(Note: these two methods of coercing R to evaluate strings as objects, <code>eval(as.name)</code>, and <code>!!as.name</code> are used throughout this script, but they will only be documented here.)</p>
+<p>Next, the columns created by <code>count</code> are piped into <code>dplyr::mutate()</code>, which generates four more columns: <code>perc</code>, the percentage of total cases for each value of <code>score_name</code>; <code>cum_per</code>, the cumulative percentage over increasing values of <code>score_name</code>; and <code>lag_raw</code> and <code>lag_cum_per</code>, two <code>base::lag()</code> columns that provide the values for <code>score_name</code> and <code>cum_per</code> <em>from the previous row</em>. These columns are rounded <code>base::round()</code> to four decimal places. <code>assign</code> names the output frequency table and makes it available in the global environment.</p>
+<pre class="r"><code>eval(as.name(paste0(score_name, '_raw_by_agestrat'))) %&gt;% count(!!as.name(score_name)) %&gt;% 
+  mutate(perc = round(100*(n/sum(n)), 4), cum_per = round(100*(cumsum(n)/sum(n)), 4), lag_raw = lag(!!as.name(score_name)), lag_cum_per = lag(cum_per)) %&gt;% 
+  assign(paste0(score_name, '_freq_agestrat'), ., envir = .GlobalEnv)</code></pre>
+<p>The next snippet generates a table of descriptive statistics by <code>agestrat</code>, named by <code>assign</code> with the suffix <code>_desc_agestrat</code>. The input normative data object is piped into <code>dplyr::arrange()</code>, to sort by agestrat. The data object was previously grouped by <code>agestrat</code>, which means that summary statistics can now be calculated for those groups. This is accomplished by piping the object into <code>dplyr::summarise()</code>, yielding a summary table of descriptive statistics with one row per <code>agestrat</code>. These statistics are the raw-score <code>mean</code>, <code>median</code>, <code>sd</code>, and <code>ES</code> (effect size) for each <code>agestrat</code>, all rounded to two decimal places.</p>
+<pre class="r"><code>eval(as.name(paste0(score_name, '_raw_by_agestrat'))) %&gt;% arrange(agestrat) %&gt;% summarise(n = n(),
+                                                                                          median = round(median(eval(as.name(score_name))), 2),
+                                                                                          mean = round(mean(eval(as.name(score_name))), 2),
+                                                                                          sd = round(sd(eval(as.name(score_name))), 2)) %&gt;%
+  mutate(ES = round((mean - lag(mean))/((sd + lag(sd))/2),2), group = c(1:num_agestrat)) %&gt;% 
+  assign(paste0(score_name, '_desc_agestrat'), ., envir = .GlobalEnv)</code></pre>
+<p>Next we create vectors and values that are used repeatedly throughout the rest of the script. We use <code>dplyr::pull()</code> to extract the values of <code>agestrat</code> from the table of descriptive statistics. <code>pull</code> extracts a column of a data frame as a vector. We use <code>base::max()</code> to extract the maximum values of <code>mean</code> and <code>sd</code> from the table of descriptive statistics; the <code>$</code> subsetting operator allows us to specify a column by name.</p>
+<p>To specify <code>scale_y_break_options</code>, a numerical vector providing the numerical scale for the y-axis in plots generated by downstream code, we use <code>base::seq</code>. This function generates a numerical sequence, using arguments for starting number (<code>0</code>), ending number (<code>max_mean+(2*max_SD)</code>), and interval (<code>5</code>).</p>
 <p>Extract unique values of <code>agestrat</code> into vector to be used in other procedures. <code>pull</code> extracts a column of a data frame as a vector.</p>
-<pre class="r"><code>agestrat &lt;- ANT_tot_desc_agestrat %&gt;% pull(agestrat)</code></pre>
+<pre class="r"><code>agestrat &lt;- eval(as.name(paste0(score_name, '_desc_agestrat'))) %&gt;% pull(agestrat)
+max_mean &lt;- max(eval(as.name(paste0(score_name, '_desc_agestrat')))$mean)
+max_SD &lt;- max(eval(as.name(paste0(score_name, '_desc_agestrat')))$sd)
+scale_y_break_options &lt;- seq(0, max_mean+(2*max_SD), 5)
+scale_y_ceiling_mean &lt;- scale_y_break_options[which.min(abs(scale_y_break_options - (max_mean+(2*max_SD))))]
+scale_y_ceiling_SD &lt;- scale_y_break_options[which.min(abs(scale_y_break_options - (max_SD+(max_SD/2))))]</code></pre>
 <p>Use <code>tribble</code> to generate z-score lookup table, associating z-scores with normalized percentile points. <code>tribble</code> allows you to create a tibble inline, laying out the data in a readable columnar format, with column heads.</p>
-<pre class="r"><code>perc_z &lt;- tribble(
+<pre class="r"><code>max_mean &lt;- max(eval(as.name(paste0(score_name, '_desc_agestrat')))$mean)
+max_SD &lt;- max(eval(as.name(paste0(score_name, '_desc_agestrat')))$sd)
+scale_y_break_options &lt;- seq(0, max_mean+(2*max_SD), 5)
+scale_y_ceiling_mean &lt;- scale_y_break_options[which.min(abs(scale_y_break_options - (max_mean+(2*max_SD))))]
+scale_y_ceiling_SD &lt;- scale_y_break_options[which.min(abs(scale_y_break_options - (max_SD+(max_SD/2))))]
+
+# Create Z score table
+perc_z &lt;- tribble(
   ~lohi_value,  ~z_score,
   5, 1.6449,
   10,   1.2816,
   15,   1.0364,
   20,   0.8416,
-  25,   0.6745,
-  75,   0.6745,
-  80,   0.8416,
-  85,   1.0364,
-  90,   1.2816,
-  95,   1.6449
-)
-NA</code></pre>
+  25,   0.6745,</code></pre>
 <p><br></p>
 </div>
 </div>
@@ -749,15 +763,15 @@ print(sd_plot)</code></pre>
 <h6>VALID CODE TO RUN</h6>
 <pre class="r"><code>norm_build1 &lt;-
   ANT_tot_freq_agestrat %&gt;% left_join(ANT_tot_age_lo1lo2_hi1hi2, by = 'agestrat') %&gt;% mutate (
-    IRS_lo1 = ((lo1 - lag_cum_per) / perc) * (ANT_total - lag_tot) + lag_tot,
+    IRS_lo1 = ((lo1 - lag_cum_per) / perc) * (ANT_total - lag_raw) + lag_raw,
     IRS_lo2 = ((lo2 - lag_cum_per) /
-                 perc) * (ANT_total - lag_tot) + lag_tot,
+                 perc) * (ANT_total - lag_raw) + lag_raw,
     IRS_med = ((50 - lag_cum_per) /
-                 perc) * (ANT_total - lag_tot) + lag_tot,
+                 perc) * (ANT_total - lag_raw) + lag_raw,
     IRS_hi1 = ((hi1 - lag_cum_per) /
-                 perc) * (ANT_total - lag_tot) + lag_tot,
+                 perc) * (ANT_total - lag_raw) + lag_raw,
     IRS_hi2 = ((hi2 - lag_cum_per) /
-                 perc) * (ANT_total - lag_tot) + lag_tot,
+                 perc) * (ANT_total - lag_raw) + lag_raw,
     dist_point = case_when(
       lo1 &lt;= cum_per &amp; lo1 &gt; lag_cum_per ~ 'lo1',
       lo2 &lt;= cum_per &amp;
@@ -813,16 +827,16 @@ norm_build_med_hilo_sum &lt;-
 <p>Initializes an output table <code>norm_build1</code>. Input table is the age-stratified raw score frequency table <code>ANT_tot_freq_agestrat</code>. <code>left_join</code> matches the input table to the <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code> normalizing cumulative percentage points for each <code>agestrat</code>. <code>mutate</code> computes new variables.</p>
 <pre class="r"><code>norm_build1 &lt;-
   ANT_tot_freq_agestrat %&gt;% left_join(ANT_tot_age_lo1lo2_hi1hi2, by = 'agestrat') %&gt;% mutate (</code></pre>
-<p>The first set of new variables created by <code>mutuate</code> are the imputed raw scores <code>IRS_</code> for the median <code>med</code>, <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code>. The <code>IRS_</code> formula includes the raw score <code>ANT_total</code> associated with <code>lo1</code>, <code>lo2</code>, <code>hi1</code> or <code>hi2</code>, along with the percentage of cases <code>perc</code> in that same row. The formula also incorporates the raw score <code>lag_tot</code> and cumulative percentage <code>lag_cum_tot</code> from the <em>trailing</em> row. <code>mutate</code> calculates these values for every row, by <code>agestrat</code> even though eventually only the value in the row of <code>lo1</code> (for example) will flow through to the next set of calculations.</p>
-<pre class="r"><code>    IRS_lo1 = ((lo1 - lag_cum_per) / perc) * (ANT_total - lag_tot) + lag_tot,
+<p>The first set of new variables created by <code>mutuate</code> are the imputed raw scores <code>IRS_</code> for the median <code>med</code>, <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code>. The <code>IRS_</code> formula includes the raw score <code>ANT_total</code> associated with <code>lo1</code>, <code>lo2</code>, <code>hi1</code> or <code>hi2</code>, along with the percentage of cases <code>perc</code> in that same row. The formula also incorporates the raw score <code>lag_raw</code> and cumulative percentage <code>lag_cum_tot</code> from the <em>trailing</em> row. <code>mutate</code> calculates these values for every row, by <code>agestrat</code> even though eventually only the value in the row of <code>lo1</code> (for example) will flow through to the next set of calculations.</p>
+<pre class="r"><code>    IRS_lo1 = ((lo1 - lag_cum_per) / perc) * (ANT_total - lag_raw) + lag_raw,
     IRS_lo2 = ((lo2 - lag_cum_per) /
-                 perc) * (ANT_total - lag_tot) + lag_tot,
+                 perc) * (ANT_total - lag_raw) + lag_raw,
     IRS_med = ((50 - lag_cum_per) /
-                 perc) * (ANT_total - lag_tot) + lag_tot,
+                 perc) * (ANT_total - lag_raw) + lag_raw,
     IRS_hi1 = ((hi1 - lag_cum_per) /
-                 perc) * (ANT_total - lag_tot) + lag_tot,
+                 perc) * (ANT_total - lag_raw) + lag_raw,
     IRS_hi2 = ((hi2 - lag_cum_per) /
-                 perc) * (ANT_total - lag_tot) + lag_tot,</code></pre>
+                 perc) * (ANT_total - lag_raw) + lag_raw,</code></pre>
 <p>Next <code>mutate</code> creates <code>dist_point</code> column. This column locates the rows in the table containing values of <code>cum_per</code> corresponding to the chosen values for <code>med</code>, <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code>, and applies a label to flag these rows. In the flagged rows, the <code>lo1</code> label (for example) identifies the row where the value of <code>lo1</code> is less than or equal to the value of <code>cum_per</code> in that row, and greater than the value of <code>cum_per</code> in the trailing row. <code>case_when</code> is used to specify the logical conditions that identify the rows where the labels in <code>dist_point</code> are to be applied. The reason for flagging specific rows in this context is that we want to extract specific cells from columns (e.g., the <code>IRS_</code> columns) where a value is calculated for every row. We want to filter and pass only the rows corresponding to the <code>dist_point</code> labels to later operations.</p>
 <p>Note the use of <code>TRUE ~ NA_character_</code> as the final argument of <code>case_when</code>. <code>TRUE</code> specifies the <em>ELSE</em> condition in the <code>case_when</code> logic. When using <code>case_when</code> for conditional transformations, all RHS must evaluate to the same type of vector. In this instance, we want <code>TRUE</code> to evaluate to missing (<code>NA</code>), but this is a logical type, whereas the other RHS in this <code>case_when</code> are all character. <code>NA_character_</code> supports missing values in a character vector.</p>
 <pre class="r"><code>    dist_point = case_when(

@@ -58,7 +58,7 @@ suppressMessages(
 num_agestrat <- length(unique(eval(as.name(paste0(score_name, '_raw_by_agestrat')))$agestrat))
 
 eval(as.name(paste0(score_name, '_raw_by_agestrat'))) %>% count(!!as.name(score_name)) %>% 
-  mutate(perc = round(100*(n/sum(n)), 4), cum_per = round(100*(cumsum(n)/sum(n)), 4), lag_tot = lag(!!as.name(score_name)), lag_cum_per = lag(cum_per)) %>% 
+  mutate(perc = round(100*(n/sum(n)), 4), cum_per = round(100*(cumsum(n)/sum(n)), 4), lag_raw = lag(!!as.name(score_name)), lag_cum_per = lag(cum_per)) %>% 
   assign(paste0(score_name, '_freq_agestrat'), ., envir = .GlobalEnv)
 
 eval(as.name(paste0(score_name, '_raw_by_agestrat'))) %>% arrange(agestrat) %>% summarise(n = n(),
@@ -236,15 +236,15 @@ norm_build1 <-
   eval(as.name(paste0(score_name, '_freq_agestrat'))) %>% 
   left_join(eval(as.name(paste0(score_name, '_age_lo1lo2_hi1hi2'))), by = 'agestrat') %>% 
   mutate (
-    IRS_lo1 = ((lo1 - lag_cum_per) / perc) * (eval(as.name(score_name)) - lag_tot) + lag_tot,
+    IRS_lo1 = ((lo1 - lag_cum_per) / perc) * (eval(as.name(score_name)) - lag_raw) + lag_raw,
     IRS_lo2 = ((lo2 - lag_cum_per) /
-                 perc) * (eval(as.name(score_name)) - lag_tot) + lag_tot,
+                 perc) * (eval(as.name(score_name)) - lag_raw) + lag_raw,
     IRS_med = ((50 - lag_cum_per) /
-                 perc) * (eval(as.name(score_name)) - lag_tot) + lag_tot,
+                 perc) * (eval(as.name(score_name)) - lag_raw) + lag_raw,
     IRS_hi1 = ((hi1 - lag_cum_per) /
-                 perc) * (eval(as.name(score_name)) - lag_tot) + lag_tot,
+                 perc) * (eval(as.name(score_name)) - lag_raw) + lag_raw,
     IRS_hi2 = ((hi2 - lag_cum_per) /
-                 perc) * (eval(as.name(score_name)) - lag_tot) + lag_tot,
+                 perc) * (eval(as.name(score_name)) - lag_raw) + lag_raw,
     dist_point = case_when(
       lo1 <= cum_per & lo1 > lag_cum_per ~ 'lo1',
       lo2 <= cum_per &
@@ -1195,5 +1195,59 @@ rm(raw_to_SS_lookup_empty, final_med_SD, smooth_med_SD)
 write_csv(
   raw_to_SS_lookup, here(
     paste0('OUTPUT-FILES/', score_name, '-raw-SS-lookup.csv')
+  )
+)
+
+map(
+  agestrat,
+  ~ raw_to_SS_lookup %>%
+    # select SS columns and rawscore
+    select(paste0('mo_', .x), rawscore) %>%
+    # rename those columns so that the agestrat label refers to the rawscore column
+    rename(SS = paste0('mo_', .x),!!paste0('mo_', .x) := rawscore) %>%
+    # expand the table vertically, adding new rows, so there's a row for every possible SS value
+    complete(SS = 40:160) %>%
+    # because SS-to-raw is one-to-many, there will be rows with identical values
+    # of SS, collect these rows into group, so that there is one group for each
+    # value of SS
+    group_by(SS) %>%
+    # filter step retains all 1-row groups, and the first and last rows of any
+    # multi-row groups. n() == 1 returns 1-row groups; n() > 1 & row_number()
+    # %in% c(1, n()) returns rows of multi-row groups with the row number of
+    # either 1 (first row), or n() which is the number or rows and also the
+    # number of the last row. The first and last rows hold the min and max
+    # values of raw for that value of SS (the grouping variable)
+    filter(n() == 1 | n() > 1 & row_number()  %in% c(1, n())) %>%
+    # !! (unquote) is required for summarise to evaluate paste0('mo_', .x),
+    # beccause dplyr verbs quote their inputs (:= is also required instead of
+    # =). Summarise creates a table with one row per group (one row per
+    # possible value of SS). For the 1-row groups, str_c simply passes the
+    # value of raw as a string; for the multi-row groups, str_c joins the min
+    # and max values of raw with the '=' separator.
+    summarise(!!paste0('mo_', .x) := str_c(eval(as.name(
+      paste0('mo_', .x)
+    )), collapse = '-')) %>%
+    # recode missing values of raw to '-'
+    mutate_at(vars(paste0('mo_', .x)), ~ case_when(is.na(.x) ~ '-', TRUE ~ .x)) %>%
+    # sort descending on SS
+    arrange(desc(SS)) %>%
+    # save an interim file with SS and rawscore, the latter in a column named for agestrat
+    assign(paste0('raw_SS_', .x), ., envir = .GlobalEnv)
+)
+
+# Create a char vec containing names of interim files created for look-ups by agestrat
+file_names <- paste0('raw_SS_', agestrat)
+
+# put the interim files into a list
+mylist <- lapply(file_names, get)
+
+# use `purrr::reduce` to perform iterative joins to bring all interim tables
+# into single final ouput table (print manual format)
+norms_pub <- mylist %>% reduce(left_join, by = "SS")
+
+# write print-format raw-to-SS lookup table to .csv
+write_csv(
+  norms_pub, here(
+    paste0('OUTPUT-FILES/', score_name, '-raw-SS-lookup-print-table.csv')
   )
 )
