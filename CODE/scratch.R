@@ -128,4 +128,57 @@ out3 <- in3 %>%
 out_all <- left_join(out12, out3, by = 'x')
 
 
+df <- data.frame(id=1:5,matrix(runif(n=26*5),ncol=26))
 
+df1 <- df %>% gather(k,v,-id) %>% group_by(id) %>% 
+  summarise(m=mean(v))
+
+ant_gathered <- ant_norms %>% 
+  gather(k,v,-rawscore) 
+
+ant_complete <- ant_gathered %>% 
+  group_by(k) %>%
+  complete(v = 40:160) %>% 
+  ungroup() %>% 
+  group_by(k, v) %>% 
+  filter(n() == 1 | n() > 1 & row_number()  %in% c(1, n())) %>%
+  summarise(rawscore = str_c(rawscore, collapse = '-')) %>%
+  mutate_at(vars(rawscore), ~ case_when(is.na(.x) ~ '-', TRUE ~ .x)) %>%
+  arrange(k, desc(v)) %>% 
+  spread(k, rawscore) %>% 
+  rename(SS = v) %>% 
+  arrange(desc(SS))
+
+
+
+  summarize(raw = paste0(unique(range(rawscore)), collapse = "-")) 
+  
+  # summarise(raw = if(n() > 1) str_c(range(rawscore), collapse='-') else rawscore) 
+  
+  ant_complete %>% filter(n() == 1 | n() > 1 & row_number()  %in% c(1, n()))
+  
+  ant_complete %>% filter(n() == 1)
+  
+  ant_complete %>% filter(n() > 1 & row_number()  %in% c(1, n()))
+  
+  
+  
+  
+  
+  ant_norms <- read_csv(here('OUTPUT-FILES/ANT_total-raw-SS-lookup.csv'))
+  
+  agestrat <- c(60, 63, 66, 69, 72, 75, 78, 81, 84, 87, 90, 93, 96, 102, 108, 
+                114, 120, 126, 132, 138, 144, 150, 156, 168, 180, 192, 228)
+
+  raw_SS_60 <- ant_norms %>%
+    select(mo_60, rawscore) %>%
+    rename(SS = mo_60, mo_60 = rawscore) %>%
+    complete(SS = 40:160) %>%
+    group_by(SS) %>%
+    filter(n() == 1 | n() > 1 & row_number()  %in% c(1, n())) %>%
+    summarise(mo_60 = str_c(mo_60
+                            , collapse = '-')) %>%
+    mutate_at(vars(mo_60), ~ case_when(is.na(.x) ~ '-', TRUE ~ .x)) %>%
+    arrange(desc(SS))
+
+  
