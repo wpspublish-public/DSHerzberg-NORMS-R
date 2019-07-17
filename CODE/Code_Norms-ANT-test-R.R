@@ -1283,12 +1283,13 @@ mylist <- lapply(file_names, get)
 
 # use `purrr::reduce` to perform iterative joins to bring all interim tables
 # into single final ouput table (print manual format)
-norms_pub <- mylist %>% reduce(left_join, by = "SS")
+norms_pub1 <- mylist %>% reduce(left_join, by = "SS")
 
 # write print-format raw-to-SS lookup table to .csv
 write_csv(
-  norms_pub, here(
-    paste0('OUTPUT-FILES/', score_name, '-raw-SS-lookup-print-table.csv')
+  norms_pub1, here(
+    paste0('OUTPUT-FILES/', score_name, '-raw-SS-lookup-print-table-test.csv')
   )
 )
+
 

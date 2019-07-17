@@ -128,57 +128,48 @@ out3 <- in3 %>%
 out_all <- left_join(out12, out3, by = 'x')
 
 
-df <- data.frame(id=1:5,matrix(runif(n=26*5),ncol=26))
+# df <- data.frame(id=1:5,matrix(runif(n=26*5),ncol=26))
+# 
+# df1 <- df %>% gather(k,v,-id) %>% group_by(id) %>% 
+#   summarise(m=mean(v))
 
-df1 <- df %>% gather(k,v,-id) %>% group_by(id) %>% 
-  summarise(m=mean(v))
+# extract agestrat labels for processing below
+ant_norms_names <- names(ant_norms)[-1]
 
-ant_gathered <- ant_norms %>% 
-  gather(k,v,-rawscore) 
-
-ant_complete <- ant_gathered %>% 
-  group_by(k) %>%
-  complete(v = 40:160) %>% 
-  ungroup() %>% 
-  group_by(k, v) %>% 
+norms_pub1 <- ant_norms %>% 
+  # gather collapses wide table into three-column tall table with key-value
+  # pairs: rawscore, agestrat(key var, many rows for each agestrat), SS(value
+  # var, one row for each value of SS within each agestrat)
+  gather(agestrat, SS,-rawscore) %>% 
+  group_by(agestrat) %>%
+  # expand the table vertically, adding new rows, so there's a row for every possible SS value
+  complete(SS = 40:160) %>% 
+  ungroup() %>%
+  # regroup table by two levels
+  group_by(agestrat, SS) %>%
+  # filter step retains all 1-row groups, and the first and last rows of any
+  # multi-row groups. n() == 1 returns 1-row groups; n() > 1 & row_number()
+  # %in% c(1, n()) returns rows of multi-row groups with the row number of
+  # either 1 (first row), or n() which is the number or rows and also the
+  # number of the last row. The first and last rows hold the min and max
+  # values of raw for that value of SS (the grouping variable)
   filter(n() == 1 | n() > 1 & row_number()  %in% c(1, n())) %>%
+  # Summarise creates a table with one row per group (one row per
+  # possible value of SS). For the 1-row groups, str_c simply passes the
+  # value of raw as a string; for the multi-row groups, str_c joins the min
+  # and max values of raw with the '=' separator.
   summarise(rawscore = str_c(rawscore, collapse = '-')) %>%
+  # recode missing values of raw to '-'
   mutate_at(vars(rawscore), ~ case_when(is.na(.x) ~ '-', TRUE ~ .x)) %>%
-  arrange(k, desc(v)) %>% 
-  spread(k, rawscore) %>% 
-  rename(SS = v) %>% 
-  arrange(desc(SS))
+  # sort on two levels
+  arrange(agestrat, desc(SS)) %>% 
+  # spread table back to wide, all values of SS (one row for each), agestrat
+  # columns filled with values of rawscore
+  spread(agestrat, rawscore) %>%
+  # sort descending on SS
+  arrange(desc(SS)) %>% 
+  # apply desired final column names
+  select(SS, ant_norms_names)
 
 
-
-  summarize(raw = paste0(unique(range(rawscore)), collapse = "-")) 
-  
-  # summarise(raw = if(n() > 1) str_c(range(rawscore), collapse='-') else rawscore) 
-  
-  ant_complete %>% filter(n() == 1 | n() > 1 & row_number()  %in% c(1, n()))
-  
-  ant_complete %>% filter(n() == 1)
-  
-  ant_complete %>% filter(n() > 1 & row_number()  %in% c(1, n()))
-  
-  
-  
-  
-  
-  ant_norms <- read_csv(here('OUTPUT-FILES/ANT_total-raw-SS-lookup.csv'))
-  
-  agestrat <- c(60, 63, 66, 69, 72, 75, 78, 81, 84, 87, 90, 93, 96, 102, 108, 
-                114, 120, 126, 132, 138, 144, 150, 156, 168, 180, 192, 228)
-
-  raw_SS_60 <- ant_norms %>%
-    select(mo_60, rawscore) %>%
-    rename(SS = mo_60, mo_60 = rawscore) %>%
-    complete(SS = 40:160) %>%
-    group_by(SS) %>%
-    filter(n() == 1 | n() > 1 & row_number()  %in% c(1, n())) %>%
-    summarise(mo_60 = str_c(mo_60
-                            , collapse = '-')) %>%
-    mutate_at(vars(mo_60), ~ case_when(is.na(.x) ~ '-', TRUE ~ .x)) %>%
-    arrange(desc(SS))
-
-  
+ 
