@@ -136,7 +136,7 @@ out_all <- left_join(out12, out3, by = 'x')
 # extract agestrat labels for processing below
 ant_norms_names <- names(ant_norms)[-1]
 
-norms_pub1 <- ant_norms %>% 
+norms_pub <- ant_norms %>% 
   # gather collapses wide table into three-column tall table with key-value
   # pairs: rawscore, agestrat(key var, many rows for each agestrat), SS(value
   # var, one row for each value of SS within each agestrat)

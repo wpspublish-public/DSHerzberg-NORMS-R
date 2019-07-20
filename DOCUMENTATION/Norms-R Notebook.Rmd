@@ -23,6 +23,8 @@ The HTML narrative is organized into sections reflecting discrete topics and ope
 2. `COMMENTED CODE CHUNKS`: these snippets provide the analysis and documentation of the code and workflow. The R code in these snippets is redundant with that in `VALID CODE TO RUN` section. Here, it serves merely to enhance the code documenatation, and is not meant to be run.
 
 <br>
+#### NOTE: EDIT FOLDER STRUCTURE
+
 
 #### CREATE AN RStudio PROJECT WITH STANDARD FOLDER STRUCTURE:
 To keep your work organized, set up a project in RStudio, by clicking File -> New Project. You'll be asked to specify a working directory associated with the project. Create the following folders within the working directory:
@@ -272,7 +274,7 @@ To specify `scale_y_break_options`, a numerical vector providing the numerical s
 
 The ceiliing values, for the mean and SD along the y-axis of plots, are extracted from `scale_y_break_options`. This is done so that plots can be scaled appropriately for the differing possible score ranges of the raw score being normed. `base::which.min()` returns the sequence (position of a value in the vector `scale_y_break_options`)
 
-***********START HERE*************
+***********START HERE WITH NEW WRITE OUT OF .CSVS FOR DESC AND FREQ*************
 
 ```{r freq_desc, echo=12:17, eval=FALSE}
 ```

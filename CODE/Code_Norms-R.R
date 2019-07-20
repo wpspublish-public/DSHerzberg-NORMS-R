@@ -90,6 +90,28 @@ perc_z <- tribble(
   95,	1.6449
 )
 
+# write raw score descriptives by agestrat to .csv
+write_csv(eval(as.name(paste0(score_name, '_desc_agestrat'))), here(
+  paste0(
+    'OUTPUT-FILES/DESCRIPTIVE-TABLES/',
+    score_name,
+    '-descriptives-agestrat-',
+    format(Sys.Date(), "%Y-%m-%d"),
+    '.csv'
+  )
+))
+
+# write raw score freq counts by agestrat to .csv
+write_csv(eval(as.name(paste0(score_name, '_freq_agestrat'))), here(
+  paste0(
+    'OUTPUT-FILES/DESCRIPTIVE-TABLES/',
+    score_name,
+    '-frequencies-agestrat-',
+    format(Sys.Date(), "%Y-%m-%d"),
+    '.csv'
+  )
+))
+
 # Plot raw score means, SDs; pause execution for user to examine plot.
 
 #$$$$$$$$$$$NOTE: VALUE LABEL CODE BELOW NOT PROPIGATED TO MARKDOWN OR CASL-2 SCRIPTS
@@ -259,11 +281,14 @@ norm_build1 <-
     )
   ) %>% drop_na() 
 
-# Next code deals with situation where upper age ranges are ceilinged out on the
-# score being normed, such that the code to this points doesn't generate hi2
-# and/or hi1 dist_points or IRS for those upper ranges. Next section imputes new rows
-# for hi1, hi2 (in agestrats where they are missing), and copies in nearest
-# values for the remaining columns.
+# Next code deals with situation where upper age ranges are ceilinged out, or
+# lower age ranges are floored out, on the score being normed, such that the
+# code to this points doesn't generate lo1, lo2, hi1 and/or hi2 dist_points or
+# IRS for those lower/upper ranges. Next section imputes new rows for lo1, lo2,
+# med, hi1, hi2 (in agestrats where they are missing), and copies in nearest
+# values for the remaining columns. Two separate calls of tidyr::fill(), are
+# required, one to fill down the table for missing hi values, and one to fill up
+# the table for missing lo values.3
 
 df_interim <- norm_build1 %>% ungroup() %>% 
   mutate(
@@ -280,6 +305,10 @@ df_interim <- norm_build1 %>% ungroup() %>%
   ) %>%
   fill(
     !!as.name(score_name):IRS_hi2
+  ) %>% 
+  fill(
+    !!as.name(score_name):IRS_hi2,
+    .direction = "up"
   ) %>% 
   mutate(
     dist_point = case_when(
@@ -1135,10 +1164,6 @@ writeLines(
 invisible(readline())
 
 
-# Clean up environment
-rm(list = ls()[!ls() %in% c("smooth_med_SD", "score_name", "num_agestrat", "agestrat", "max_raw", "min_raw", 
-                            "scale_y_ceiling_mean", "scale_y_ceiling_SD", "mean_plot")])
-
 # next code section generates raw-to-SS look-up tables.
 
 # create table with only vars needed to calc standard scores
@@ -1189,65 +1214,86 @@ raw_to_SS_lookup <- raw_to_SS_lookup_empty %>%
   # left-to-right. That order of agestrats is given by the char vec
   # `c(final_med_SD$agestrat)`.
   select(rawscore, c(final_med_SD$agestrat))
-rm(raw_to_SS_lookup_empty, final_med_SD, smooth_med_SD)
+rm(raw_to_SS_lookup_empty, final_med_SD)
+
+# write final table of smoothed medians, SDs to .csv
+final_med_SD_table <- smooth_med_SD %>% 
+  select(
+    group, agestrat, lo_SD_sm, median_sm, hi_SD_sm
+  ) %>% 
+  rename(
+    smoothed_lo_SD = lo_SD_sm, smoothed_median = median_sm, smoothed_hi_SD = hi_SD_sm
+  ) %>% 
+  mutate(
+    ES = (smoothed_median - lag(smoothed_median))/((smoothed_hi_SD+lag(smoothed_hi_SD)+smoothed_lo_SD+lag(smoothed_lo_SD))/4)
+  )
+
+write_csv(final_med_SD_table, here(
+  paste0(
+    'OUTPUT-FILES/DESCRIPTIVE-TABLES/',
+    score_name,
+    '-final_med_SD_table-',
+    format(Sys.Date(), "%Y-%m-%d"),
+    '.csv'
+  )
+))
 
 # write final raw-to-SS lookup table to .csv
-write_csv(
-  raw_to_SS_lookup, here(
-    paste0('OUTPUT-FILES/', score_name, '-raw-SS-lookup.csv')
+write_csv(raw_to_SS_lookup, here(
+  paste0(
+    'OUTPUT-FILES/FINAL-RAW-TO-SS-LOOKUP-TABLES/',
+    score_name,
+    '-raw-SS-lookup-',
+    format(Sys.Date(), "%Y-%m-%d"),
+    '.csv'
   )
-)
+))
 
-map(
-  agestrat,
-  ~ raw_to_SS_lookup %>%
-    # select SS columns and rawscore
-    select(paste0('mo_', .x), rawscore) %>%
-    # rename those columns so that the agestrat label refers to the rawscore column
-    rename(SS = paste0('mo_', .x),!!paste0('mo_', .x) := rawscore) %>%
-    # expand the table vertically, adding new rows, so there's a row for every possible SS value
-    complete(SS = 40:160) %>%
-    # because SS-to-raw is one-to-many, there will be rows with identical values
-    # of SS, collect these rows into group, so that there is one group for each
-    # value of SS
-    group_by(SS) %>%
-    # filter step retains all 1-row groups, and the first and last rows of any
-    # multi-row groups. n() == 1 returns 1-row groups; n() > 1 & row_number()
-    # %in% c(1, n()) returns rows of multi-row groups with the row number of
-    # either 1 (first row), or n() which is the number or rows and also the
-    # number of the last row. The first and last rows hold the min and max
-    # values of raw for that value of SS (the grouping variable)
-    filter(n() == 1 | n() > 1 & row_number()  %in% c(1, n())) %>%
-    # !! (unquote) is required for summarise to evaluate paste0('mo_', .x),
-    # beccause dplyr verbs quote their inputs (:= is also required instead of
-    # =). Summarise creates a table with one row per group (one row per
-    # possible value of SS). For the 1-row groups, str_c simply passes the
-    # value of raw as a string; for the multi-row groups, str_c joins the min
-    # and max values of raw with the '=' separator.
-    summarise(!!paste0('mo_', .x) := str_c(eval(as.name(
-      paste0('mo_', .x)
-    )), collapse = '-')) %>%
-    # recode missing values of raw to '-'
-    mutate_at(vars(paste0('mo_', .x)), ~ case_when(is.na(.x) ~ '-', TRUE ~ .x)) %>%
-    # sort descending on SS
-    arrange(desc(SS)) %>%
-    # save an interim file with SS and rawscore, the latter in a column named for agestrat
-    assign(paste0('raw_SS_', .x), ., envir = .GlobalEnv)
-)
+# extract agestrat labels for processing below
+norms_names <- names(raw_to_SS_lookup)[-1]
 
-# Create a char vec containing names of interim files created for look-ups by agestrat
-file_names <- paste0('raw_SS_', agestrat)
+norms_pub <- raw_to_SS_lookup %>% 
+  # gather collapses wide table into three-column tall table with key-value
+  # pairs: rawscore, agestrat(key var, many rows for each agestrat), SS(value
+  # var, one row for each value of SS within each agestrat)
+  gather(agestrat, SS,-rawscore) %>% 
+  group_by(agestrat) %>%
+  # expand the table vertically, adding new rows, so there's a row for every possible SS value
+  complete(SS = 40:160) %>% 
+  ungroup() %>%
+  # regroup table by two levels
+  group_by(agestrat, SS) %>%
+  # filter step retains all 1-row groups, and the first and last rows of any
+  # multi-row groups. n() == 1 returns 1-row groups; n() > 1 & row_number()
+  # %in% c(1, n()) returns rows of multi-row groups with the row number of
+  # either 1 (first row), or n() which is the number or rows and also the
+  # number of the last row. The first and last rows hold the min and max
+  # values of raw for that value of SS (the grouping variable)
+  filter(n() == 1 | n() > 1 & row_number()  %in% c(1, n())) %>%
+  # Summarise creates a table with one row per group (one row per
+  # possible value of SS). For the 1-row groups, str_c simply passes the
+  # value of raw as a string; for the multi-row groups, str_c joins the min
+  # and max values of raw with the '=' separator.
+  summarise(rawscore = str_c(rawscore, collapse = '--')) %>%
+  # recode missing values of raw to '-'
+  mutate_at(vars(rawscore), ~ case_when(is.na(.x) ~ '-', TRUE ~ .x)) %>%
+  # sort on two levels
+  arrange(agestrat, desc(SS)) %>% 
+  # spread table back to wide, all values of SS (one row for each), agestrat
+  # columns filled with values of rawscore
+  spread(agestrat, rawscore) %>%
+  # sort descending on SS
+  arrange(desc(SS)) %>% 
+  # apply desired final column names
+  select(SS, norms_names)
 
-# put the interim files into a list
-mylist <- lapply(file_names, get)
-
-# use `purrr::reduce` to perform iterative joins to bring all interim tables
-# into single final ouput table (print manual format)
-norms_pub <- mylist %>% reduce(left_join, by = "SS")
-
-# write print-format raw-to-SS lookup table to .csv
-write_csv(
-  norms_pub, here(
-    paste0('OUTPUT-FILES/', score_name, '-raw-SS-lookup-print-table.csv')
+# write final raw-to-SS lookup table to .csv
+write_csv(norms_pub, here(
+  paste0(
+    'OUTPUT-FILES/FINAL-RAW-TO-SS-LOOKUP-TABLES/',
+    score_name,
+    '-raw-SS-lookup-print-table-',
+    format(Sys.Date(), "%Y-%m-%d"),
+    '.csv'
   )
-)
+))

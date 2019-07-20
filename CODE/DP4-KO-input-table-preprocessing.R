@@ -14,12 +14,14 @@ KO_final_DP4_norms_data <- suppressMessages(
 # extract score names
 cols <- names(KO_final_DP4_norms_data)[1:24]
 
-# save one output .csv per score, each with ID, agestrat and [rawscore] columns
+# save one output .csv per score, each with ID, agestrat and [rawscore] columns,
+# filter out any cases with NA on [rawscore]
 map(
   cols,
   ~ KO_final_DP4_norms_data %>% 
     select(ID, agestrat, .x) %>% 
     arrange(agestrat) %>% 
+    filter(!is.na(!!as.name(.x))) %>% 
     write_csv(
       here(
         paste0('INPUT-FILES/', .x, '-DP4-norms-data.csv')
