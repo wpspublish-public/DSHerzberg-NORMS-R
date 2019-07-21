@@ -90,7 +90,6 @@ perc_z <- tribble(
   95,	1.6449
 )
 
-# write raw score descriptives by agestrat to .csv
 write_csv(eval(as.name(paste0(score_name, '_desc_agestrat'))), here(
   paste0(
     'OUTPUT-FILES/DESCRIPTIVE-TABLES/',
@@ -101,7 +100,6 @@ write_csv(eval(as.name(paste0(score_name, '_desc_agestrat'))), here(
   )
 ))
 
-# write raw score freq counts by agestrat to .csv
 write_csv(eval(as.name(paste0(score_name, '_freq_agestrat'))), here(
   paste0(
     'OUTPUT-FILES/DESCRIPTIVE-TABLES/',
