@@ -110,9 +110,6 @@ write_csv(eval(as.name(paste0(score_name, '_freq_agestrat'))), here(
   )
 ))
 
-# Plot raw score means, SDs; pause execution for user to examine plot.
-
-#$$$$$$$$$$$NOTE: VALUE LABEL CODE BELOW NOT PROPIGATED TO MARKDOWN OR CASL-2 SCRIPTS
 mean_plot <- ggplot(data = eval(as.name(paste0(score_name, '_desc_agestrat'))), aes(group, mean)) +
   geom_point(
     col = "blue",
@@ -133,7 +130,6 @@ mean_plot <- ggplot(data = eval(as.name(paste0(score_name, '_desc_agestrat'))), 
   ) 
 print(mean_plot)
 eval(as.name(paste0(score_name, '_desc_agestrat'))) %>% print(n = nrow(.))
-#$$$$$$$$$$$
 
 mean_plot_prompt <- function() {
   writeLines(c("\n", 

@@ -301,17 +301,17 @@ Taking `scale_y_ceiling_mean` as an example, the inner expression `abs(scale_y_b
 We use `tibble::tribble()` to generate a z-score lookup table, associating z-scores with normalized percentile points. `tribble` allows creating of a tibble using an inline method, laying out the data within the script in a readable columnar format, with column heads.
 ```{r freq_desc, echo=19:32, eval=FALSE}
 ```
-
-***********START HERE WITH NEW WRITE OUT OF .CSVS FOR DESC AND FREQ*************
+The next snippet saves out two date-labeled tables, descriptive statistics by `agestrat` and frequency counts by `agestrat`, for the score being normed. These tables are written to .csv format using `readr::write_csv()`. The file path within `here::here()` is concatenated with `paste0()`, which joins static strings with the value contained in `score_name`, as well as with a dynamic current date value provided by `base::Sys.Date()`. The latter is wrapped in `base::format`, which takes `"%Y-%m-%d"` as its second argument, specifying that the date part of the file name will be written in ISO 8601 format.
+```{r freq_desc, echo=34:52, eval=FALSE}
+```
 
 <br>
 
-
-#### Plot raw score means
+#### Plot raw score means, print descriptives table
 
 ###### VALID CODE TO RUN
 ```{r RSmean_plot, eval=FALSE}
-mean_plot <- ggplot(data = ANT_tot_desc_agestrat, aes(group, mean)) +
+mean_plot <- ggplot(data = eval(as.name(paste0(score_name, '_desc_agestrat'))), aes(group, mean)) +
   geom_point(
     col = "blue",
     fill = "blue",
@@ -319,33 +319,43 @@ mean_plot <- ggplot(data = ANT_tot_desc_agestrat, aes(group, mean)) +
     size = 3,
     shape = 23
   ) +
-  scale_x_continuous(breaks = seq(1, 27, 1), labels = agestrat) +
-  scale_y_continuous(breaks = seq(0, 55, 5), limits = c(0, 55)) +
-  labs(title = "Raw Score Means (with SDs)", x = "Agestrat", y = "Mean Total Score") +
+  geom_label_repel(aes(label = mean), hjust = .7, vjust = -1, label.padding = unit(0.1, "lines"), size = 4, col = "blue") +
+  scale_x_continuous(breaks = seq(1, num_agestrat, 1), labels = agestrat) +
+  scale_y_continuous(breaks = seq(0, scale_y_ceiling_mean, 5), limits = c(0, scale_y_ceiling_mean)) +
+  labs(title = "Raw Score Means (with SDs)", x = "Agestrat", y = "Total Score") +
   geom_errorbar(
     aes(ymin = mean - sd, ymax = mean + sd),
-    col = "blue",
+    col = "red",
     size = 0.2,
     width = 0.2
-  )
+  ) 
 print(mean_plot)
+eval(as.name(paste0(score_name, '_desc_agestrat'))) %>% print(n = nrow(.))
 ```
 
 ###### COMMENTED CODE CHUNKS
-`ggplot` takes data frame `ANT_tot_desc_agestrat` as input, yielding a scatterplot `geom_point` that maps agestrat to the x-axis and raw score mean to the y-axis `aes(group, mean)`. Plot output is assigned to `mean_plot` so that plot will print when code is executed from source. `col` controls color of plot point perimeter; `fill` controls color of point interior. Adjust the values of these arguments to change the appearance of the graph. Other useful argments include `alpha` (controls transparency of data element, values 0-1), `size` (of data points), `shape` (indicated by number, look up on internet to see charts).
+`ggplot()` takes as input the table of descriptive statistics (named by `eval(as.name(paste0(score_name, '_desc_agestrat')))`), yielding a scatterplot `geom_point` that maps `group` (a proxy for `agestrat`) to the x-axis and raw score `mean` to the y-axis, using the argument `aes(group, mean)`. Plot output is assigned to `mean_plot` so that the plot will print when the code is executed from source. `col` controls the color of the plot point perimeter; `fill` controls the color of the point interior. You can adjust the values of these arguments to change the appearance of the graph. Other useful argments include `alpha` (controls transparency of data element, values 0-1), `size` (of data points), `shape` (designated by a number, which can be obtained from charts on the internet).
 ```{r RSmean_plot, echo=1:8, eval=FALSE}
 ```
-`scale_x_continuous` and `scale_y_continuous` apply new scales to the axes. `breaks = seq(1, 27, 1)` indicates that the axis will be segmented by units of 1, running from 1 to 27. `labels = agestrat` replaces the numerical sequence on the axis with labels from the char vector `agestrat` (note: this vector must have length of 27 for this code to work). `limits = c(0, 55)` sets lower and upper numerical limits on the axis. `labs` specifies the title and super-ordinate labels for the axes.
-```{r RSmean_plot, echo=9:11, eval=FALSE}
+`ggplot` builds out graphs one layer at a time. Additional layers are added using the `+` operator. The first layer on top of the basic scatterplot is given by `ggrepel::geom_label_repel()`. This applies labels to the mean points `aes(label = mean)`. 
+These labels "repel" away from the points so that the numerical value of the mean is not sitting right on top of the corresponding plot point itself. The appearance of these labels, as well as their proximity to the plot points, is controlled by the arguments `hjust`, `vjust`, `label.padding`, `size`, and `col`.
+
+The next layers are given by `scale_x_continuous` and `scale_y_continuous`, which apply new scales to the axes. `breaks = seq(1, num_agestrat, 1)` indicates that the axis will be segmented by units of 1, running from 1 to `num_agestrat` (the number of age groups in the input table). `labels = agestrat` replaces the numerical sequence on the axis with labels from the char vector `agestrat` (note: this vector must have length equal to `num_agestrat` for this code to work). `limits = c(0, scale_y_ceiling_mean)` sets lower and upper numerical limits on the y-axis, with the upper limit given by the value of `scale_y_ceiling_mean`, initialized in upstreatm code. `labs` specifies the title and super-ordinate labels for the axes.
+```{r RSmean_plot, echo=9:12, eval=FALSE}
 ```
 `geom_errorbar` allows you to layer error bars onto a plot. `aes()` is called to map separate variables onto the error bar below the data point `ymin` and the error bar above the data point `ymax`. In this case, SD bars are created by mapping `mean - sd` and `mean + sd`. In `geom_errorbar`, `size` controls the width of the tick at the top/bottom of the bar, and `width` controls the line thickness.
-```{r RSmean_plot, echo=12:17, eval=FALSE}
+```{r RSmean_plot, echo=13:18, eval=FALSE}
 ```
-Explicit `print` call ensures that plot will print when code is executed from source.
-```{r RSmean_plot, echo=18, eval=FALSE}
+An explicit `base::print()` call ensures that the plot will print to the viewer when the code is executed from source.
+```{r RSmean_plot, echo=19, eval=FALSE}
+```
+The next snippet prints the table of descriptive statistics by `agestrat` to the console. This table is piped into `print(n = nrow(.))`, whose lone argument indicates that the data object should be printed in its entirety (that is, the number of printed rows `n` should be equal to the number of rows `nrow` in the piped-in object `.`.)
+```{r RSmean_plot, echo=20, eval=FALSE}
 ```
 
 <br>
+
+#################start here###################
 
 #### Pause execution for user to examine plot
 

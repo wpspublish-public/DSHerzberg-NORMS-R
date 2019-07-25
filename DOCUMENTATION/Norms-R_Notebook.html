@@ -523,15 +523,34 @@ perc_z &lt;- tribble(
   90,   1.2816,
   95,   1.6449
 )</code></pre>
-<p>***********START HERE WITH NEW WRITE OUT OF .CSVS FOR DESC AND FREQ*************</p>
+<p>The next snippet saves out two date-labeled tables, descriptive statistics by <code>agestrat</code> and frequency counts by <code>agestrat</code>, for the score being normed. These tables are written to .csv format using <code>readr::write_csv()</code>. The file path within <code>here::here()</code> is concatenated with <code>paste0()</code>, which joins static strings with the value contained in <code>score_name</code>, as well as with a dynamic current date value provided by <code>base::Sys.Date()</code>. The latter is wrapped in <code>base::format</code>, which takes <code>&quot;%Y-%m-%d&quot;</code> as its second argument, specifying that the date part of the file name will be written in ISO 8601 format.</p>
+<pre class="r"><code>write_csv(eval(as.name(paste0(score_name, '_desc_agestrat'))), here(
+  paste0(
+    'OUTPUT-FILES/DESCRIPTIVE-TABLES/',
+    score_name,
+    '-descriptives-agestrat-',
+    format(Sys.Date(), &quot;%Y-%m-%d&quot;),
+    '.csv'
+  )
+))
+
+write_csv(eval(as.name(paste0(score_name, '_freq_agestrat'))), here(
+  paste0(
+    'OUTPUT-FILES/DESCRIPTIVE-TABLES/',
+    score_name,
+    '-frequencies-agestrat-',
+    format(Sys.Date(), &quot;%Y-%m-%d&quot;),
+    '.csv'
+  )
+))</code></pre>
 <p><br></p>
 </div>
 </div>
-<div id="plot-raw-score-means" class="section level4">
-<h4>Plot raw score means</h4>
+<div id="plot-raw-score-means-print-descriptives-table" class="section level4">
+<h4>Plot raw score means, print descriptives table</h4>
 <div id="valid-code-to-run-3" class="section level6">
 <h6>VALID CODE TO RUN</h6>
-<pre class="r"><code>mean_plot &lt;- ggplot(data = ANT_tot_desc_agestrat, aes(group, mean)) +
+<pre class="r"><code>mean_plot &lt;- ggplot(data = eval(as.name(paste0(score_name, '_desc_agestrat'))), aes(group, mean)) +
   geom_point(
     col = &quot;blue&quot;,
     fill = &quot;blue&quot;,
@@ -539,21 +558,23 @@ perc_z &lt;- tribble(
     size = 3,
     shape = 23
   ) +
-  scale_x_continuous(breaks = seq(1, 27, 1), labels = agestrat) +
-  scale_y_continuous(breaks = seq(0, 55, 5), limits = c(0, 55)) +
-  labs(title = &quot;Raw Score Means (with SDs)&quot;, x = &quot;Agestrat&quot;, y = &quot;Mean Total Score&quot;) +
+  geom_label_repel(aes(label = mean), hjust = .7, vjust = -1, label.padding = unit(0.1, &quot;lines&quot;), size = 4, col = &quot;blue&quot;) +
+  scale_x_continuous(breaks = seq(1, num_agestrat, 1), labels = agestrat) +
+  scale_y_continuous(breaks = seq(0, scale_y_ceiling_mean, 5), limits = c(0, scale_y_ceiling_mean)) +
+  labs(title = &quot;Raw Score Means (with SDs)&quot;, x = &quot;Agestrat&quot;, y = &quot;Total Score&quot;) +
   geom_errorbar(
     aes(ymin = mean - sd, ymax = mean + sd),
-    col = &quot;blue&quot;,
+    col = &quot;red&quot;,
     size = 0.2,
     width = 0.2
-  )
-print(mean_plot)</code></pre>
+  ) 
+print(mean_plot)
+eval(as.name(paste0(score_name, '_desc_agestrat'))) %&gt;% print(n = nrow(.))</code></pre>
 </div>
 <div id="commented-code-chunks-2" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
-<p><code>ggplot</code> takes data frame <code>ANT_tot_desc_agestrat</code> as input, yielding a scatterplot <code>geom_point</code> that maps agestrat to the x-axis and raw score mean to the y-axis <code>aes(group, mean)</code>. Plot output is assigned to <code>mean_plot</code> so that plot will print when code is executed from source. <code>col</code> controls color of plot point perimeter; <code>fill</code> controls color of point interior. Adjust the values of these arguments to change the appearance of the graph. Other useful argments include <code>alpha</code> (controls transparency of data element, values 0-1), <code>size</code> (of data points), <code>shape</code> (indicated by number, look up on internet to see charts).</p>
-<pre class="r"><code>mean_plot &lt;- ggplot(data = ANT_tot_desc_agestrat, aes(group, mean)) +
+<p><code>ggplot()</code> takes as input the table of descriptive statistics (named by <code>eval(as.name(paste0(score_name, '_desc_agestrat')))</code>), yielding a scatterplot <code>geom_point</code> that maps <code>group</code> (a proxy for <code>agestrat</code>) to the x-axis and raw score <code>mean</code> to the y-axis, using the argument <code>aes(group, mean)</code>. Plot output is assigned to <code>mean_plot</code> so that the plot will print when the code is executed from source. <code>col</code> controls the color of the plot point perimeter; <code>fill</code> controls the color of the point interior. You can adjust the values of these arguments to change the appearance of the graph. Other useful argments include <code>alpha</code> (controls transparency of data element, values 0-1), <code>size</code> (of data points), <code>shape</code> (designated by a number, which can be obtained from charts on the internet).</p>
+<pre class="r"><code>mean_plot &lt;- ggplot(data = eval(as.name(paste0(score_name, '_desc_agestrat'))), aes(group, mean)) +
   geom_point(
     col = &quot;blue&quot;,
     fill = &quot;blue&quot;,
@@ -561,19 +582,23 @@ print(mean_plot)</code></pre>
     size = 3,
     shape = 23
   ) +</code></pre>
-<p><code>scale_x_continuous</code> and <code>scale_y_continuous</code> apply new scales to the axes. <code>breaks = seq(1, 27, 1)</code> indicates that the axis will be segmented by units of 1, running from 1 to 27. <code>labels = agestrat</code> replaces the numerical sequence on the axis with labels from the char vector <code>agestrat</code> (note: this vector must have length of 27 for this code to work). <code>limits = c(0, 55)</code> sets lower and upper numerical limits on the axis. <code>labs</code> specifies the title and super-ordinate labels for the axes.</p>
-<pre class="r"><code>  scale_x_continuous(breaks = seq(1, 27, 1), labels = agestrat) +
-  scale_y_continuous(breaks = seq(0, 55, 5), limits = c(0, 55)) +
-  labs(title = &quot;Raw Score Means (with SDs)&quot;, x = &quot;Agestrat&quot;, y = &quot;Mean Total Score&quot;) +</code></pre>
+<p><code>ggplot</code> builds out graphs one layer at a time. Additional layers are added using the <code>+</code> operator. The first layer on top of the basic scatterplot is given by <code>ggrepel::geom_label_repel()</code>. This applies labels to the mean points <code>aes(label = mean)</code>. These labels “repel” away from the points so that the numerical value of the mean is not sitting right on top of the corresponding plot point itself. The appearance of these labels, as well as their proximity to the plot points, is controlled by the arguments <code>hjust</code>, <code>vjust</code>, <code>label.padding</code>, <code>size</code>, and <code>col</code>.</p>
+<p>The next layers are given by <code>scale_x_continuous</code> and <code>scale_y_continuous</code>, which apply new scales to the axes. <code>breaks = seq(1, num_agestrat, 1)</code> indicates that the axis will be segmented by units of 1, running from 1 to <code>num_agestrat</code> (the number of age groups in the input table). <code>labels = agestrat</code> replaces the numerical sequence on the axis with labels from the char vector <code>agestrat</code> (note: this vector must have length equal to <code>num_agestrat</code> for this code to work). <code>limits = c(0, scale_y_ceiling_mean)</code> sets lower and upper numerical limits on the y-axis, with the upper limit given by the value of <code>scale_y_ceiling_mean</code>, initialized in upstreatm code. <code>labs</code> specifies the title and super-ordinate labels for the axes.</p>
+<pre class="r"><code>  geom_label_repel(aes(label = mean), hjust = .7, vjust = -1, label.padding = unit(0.1, &quot;lines&quot;), size = 4, col = &quot;blue&quot;) +
+  scale_x_continuous(breaks = seq(1, num_agestrat, 1), labels = agestrat) +
+  scale_y_continuous(breaks = seq(0, scale_y_ceiling_mean, 5), limits = c(0, scale_y_ceiling_mean)) +
+  labs(title = &quot;Raw Score Means (with SDs)&quot;, x = &quot;Agestrat&quot;, y = &quot;Total Score&quot;) +</code></pre>
 <p><code>geom_errorbar</code> allows you to layer error bars onto a plot. <code>aes()</code> is called to map separate variables onto the error bar below the data point <code>ymin</code> and the error bar above the data point <code>ymax</code>. In this case, SD bars are created by mapping <code>mean - sd</code> and <code>mean + sd</code>. In <code>geom_errorbar</code>, <code>size</code> controls the width of the tick at the top/bottom of the bar, and <code>width</code> controls the line thickness.</p>
 <pre class="r"><code>  geom_errorbar(
     aes(ymin = mean - sd, ymax = mean + sd),
-    col = &quot;blue&quot;,
+    col = &quot;red&quot;,
     size = 0.2,
     width = 0.2
-  )</code></pre>
-<p>Explicit <code>print</code> call ensures that plot will print when code is executed from source.</p>
+  ) </code></pre>
+<p>An explicit <code>base::print()</code> call ensures that the plot will print to the viewer when the code is executed from source.</p>
 <pre class="r"><code>print(mean_plot)</code></pre>
+<p>The next snippet prints the table of descriptive statistics by <code>agestrat</code> to the console. This table is piped into <code>print(n = nrow(.))</code>, whose lone argument indicates that the data object should be printed in its entirety (that is, the number of printed rows <code>n</code> should be equal to the number of rows <code>nrow</code> in the piped-in object <code>.</code>.)</p>
+<pre class="r"><code>eval(as.name(paste0(score_name, '_desc_agestrat'))) %&gt;% print(n = nrow(.))</code></pre>
 <p><br></p>
 </div>
 </div>
