@@ -574,14 +574,15 @@ eval(as.name(paste0(score_name, '_desc_agestrat'))) %&gt;% print(n = nrow(.))</c
 <div id="commented-code-chunks-2" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
 <p><code>ggplot()</code> takes as input the table of descriptive statistics (named by <code>eval(as.name(paste0(score_name, '_desc_agestrat')))</code>), yielding a scatterplot <code>geom_point</code> that maps <code>group</code> (a proxy for <code>agestrat</code>) to the x-axis and raw score <code>mean</code> to the y-axis, using the argument <code>aes(group, mean)</code>. Plot output is assigned to <code>mean_plot</code> so that the plot will print when the code is executed from source. <code>col</code> controls the color of the plot point perimeter; <code>fill</code> controls the color of the point interior. You can adjust the values of these arguments to change the appearance of the graph. Other useful argments include <code>alpha</code> (controls transparency of data element, values 0-1), <code>size</code> (of data points), <code>shape</code> (designated by a number, which can be obtained from charts on the internet).</p>
-<pre class="r"><code>mean_plot &lt;- ggplot(data = eval(as.name(paste0(score_name, '_desc_agestrat'))), aes(group, mean)) +
-  geom_point(
-    col = &quot;blue&quot;,
-    fill = &quot;blue&quot;,
-    alpha = .5,
-    size = 3,
-    shape = 23
-  ) +</code></pre>
+<pre class="r"><code>    shape = 23
+  ) +
+  geom_label_repel(aes(label = mean), hjust = .7, vjust = -1, label.padding = unit(0.1, &quot;lines&quot;), size = 4, col = &quot;blue&quot;) +
+  scale_x_continuous(breaks = seq(1, num_agestrat, 1), labels = agestrat) +
+  scale_y_continuous(breaks = seq(0, scale_y_ceiling_mean, 5), limits = c(0, scale_y_ceiling_mean)) +
+  labs(title = &quot;Raw Score Means (with SDs)&quot;, x = &quot;Agestrat&quot;, y = &quot;Total Score&quot;) +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    col = &quot;red&quot;,</code></pre>
 <p><code>ggplot</code> builds out graphs one layer at a time. Additional layers are added using the <code>+</code> operator. The first layer on top of the basic scatterplot is given by <code>ggrepel::geom_label_repel()</code>. This applies labels to the mean points <code>aes(label = mean)</code>. These labels “repel” away from the points so that the numerical value of the mean is not sitting right on top of the corresponding plot point itself. The appearance of these labels, as well as their proximity to the plot points, is controlled by the arguments <code>hjust</code>, <code>vjust</code>, <code>label.padding</code>, <code>size</code>, and <code>col</code>.</p>
 <p>The next layers are given by <code>scale_x_continuous</code> and <code>scale_y_continuous</code>, which apply new scales to the axes. <code>breaks = seq(1, num_agestrat, 1)</code> indicates that the axis will be segmented by units of 1, running from 1 to <code>num_agestrat</code> (the number of age groups in the input table). <code>labels = agestrat</code> replaces the numerical sequence on the axis with labels from the char vector <code>agestrat</code> (note: this vector must have length equal to <code>num_agestrat</code> for this code to work). <code>limits = c(0, scale_y_ceiling_mean)</code> sets lower and upper numerical limits on the y-axis, with the upper limit given by the value of <code>scale_y_ceiling_mean</code>, initialized in upstreatm code. <code>labs</code> specifies the title and super-ordinate labels for the axes.</p>
 <pre class="r"><code>  geom_label_repel(aes(label = mean), hjust = .7, vjust = -1, label.padding = unit(0.1, &quot;lines&quot;), size = 4, col = &quot;blue&quot;) +
@@ -602,17 +603,17 @@ eval(as.name(paste0(score_name, '_desc_agestrat'))) %&gt;% print(n = nrow(.))</c
 <p><br></p>
 </div>
 </div>
-<div id="pause-execution-for-user-to-examine-plot" class="section level4">
-<h4>Pause execution for user to examine plot</h4>
-<p>When the code is sourced, the following chunk pauses execution and prompts the user to examine the newly created plot of raw score means and SDs.</p>
+<div id="pause-execution-for-user-to-examine-descriptives-table-plot" class="section level4">
+<h4>Pause execution for user to examine descriptives table, plot</h4>
+<p>When the code is sourced, the following snippet pauses execution and prompts the user to examine the newly created plot of raw score means and SDs.</p>
 <div id="valid-code-to-run-4" class="section level6">
 <h6>VALID CODE TO RUN</h6>
 <pre class="r"><code>mean_plot_prompt &lt;- function() {
-  writeLines(c(
-    strrep(&quot;\u2500&quot;, 40),
-    &quot;Examine plot of raw score means and SDs.&quot;,
-    &quot;Then press [enter] to continue.&quot;,
-    strrep(&quot;\u2500&quot;, 40)
+  writeLines(c(&quot;\n&quot;, 
+               strrep(&quot;\u2500&quot;, 80),
+               &quot;Examine descriptives (above); graph of raw score means, SDs (plot pane on right).&quot;,
+               &quot;Then press [enter] to continue.&quot;,
+               strrep(&quot;\u2500&quot;, 80)
   ))
   readline()
 }
@@ -623,82 +624,95 @@ mean_plot_prompt ()</code></pre>
 <p><code>mean_plot_prompt()</code> is a function that takes no arguments and thus can be called with empty parentheses.</p>
 <pre class="r"><code>mean_plot_prompt &lt;- function() {</code></pre>
 <p><code>writeLines</code> takes a character vector and prints it to the console, where each vector element is printed on a new line. <code>strrep(&quot;\u2500&quot;, 40)</code> repeats a unicode horizontal box drawing character <code>u2400</code> 40 times, thus enclosing the printed text between horizontal lines.</p>
-<pre class="r"><code>  writeLines(c(
-    strrep(&quot;\u2500&quot;, 40),
-    &quot;Examine plot of raw score means and SDs.&quot;,
-    &quot;Then press [enter] to continue.&quot;,
-    strrep(&quot;\u2500&quot;, 40)
+<pre class="r"><code>  writeLines(c(&quot;\n&quot;, 
+               strrep(&quot;\u2500&quot;, 80),
+               &quot;Examine descriptives (above); graph of raw score means, SDs (plot pane on right).&quot;,
+               &quot;Then press [enter] to continue.&quot;,
+               strrep(&quot;\u2500&quot;, 80)
   ))</code></pre>
 <p><code>readline</code> pauses execution and waits for the user to press [enter], at which point execution resumes.</p>
 <pre class="r"><code>  readline()</code></pre>
 <p><br></p>
 </div>
 </div>
-<div id="generate-histograms-by-agestrat" class="section level4">
-<h4>Generate histograms by agestrat</h4>
+<div id="pause-execution-for-user-input-generate-histograms-by-agestrat" class="section level4">
+<h4>Pause execution for user input; generate histograms by agestrat</h4>
+<p>When the code is sourced, the following snippet pauses execution to ask whether the user wants to view histograms by agestrat of the score being normed.</p>
 <div id="valid-code-to-run-5" class="section level6">
 <h6>VALID CODE TO RUN</h6>
-<pre class="r"><code>hist_plot &lt;- ggplot(data = ANTraw_by_agestrat, aes(ANT_total)) +
-  geom_histogram(
-    binwidth = .2,
-    col = &quot;red&quot;
-  ) +
-  scale_y_continuous(breaks = seq(0, 20, 1)) +
-  labs(title = &quot;Frequency Distribution&quot;) + 
-  theme(panel.grid.minor=element_blank()) +
-  facet_wrap(~agestrat)
-print(hist_plot)</code></pre>
+<pre class="r"><code>hist_prompt &lt;- function() {
+  writeLines(&quot;\nDo you want to examine histograms showing the distribution of the score to be normed, by agestrat?&quot;)
+  repeat {
+    show_hist &lt;-
+      suppressWarnings(as.character(readline(prompt = &quot;Enter Y or N: &quot;)))
+    if (show_hist %in% c('Y', 'y', 'Yes', 'yes')) {
+      hist_plot &lt;- ggplot(data = eval(as.name(paste0(score_name, '_raw_by_agestrat'))), aes(eval(as.name(score_name)))) +
+        geom_histogram(
+          binwidth = .2,
+          col = &quot;red&quot;
+        ) +
+        scale_y_continuous(breaks = seq(0, 20, 1)) +
+        labs(title = &quot;Frequency Distribution&quot;, x = &quot;Each bin is a count of a specific Total Score value&quot;, y = &quot;Each histogram is an agestrat&quot;) +
+        stat_function(
+          fun = function(x, mean, sd, n){
+            n * dnorm(x = x, mean = mean, sd = sd)
+          },
+          args = with(eval(as.name(paste0(score_name, '_raw_by_agestrat'))), c(mean = mean(eval(as.name(score_name))), sd = sd(eval(as.name(score_name))), n
+                                                                               = length(eval(as.name(score_name)))))
+        ) +
+        theme(panel.grid.minor=element_blank()) +
+        facet_wrap(~agestrat)
+      print(hist_plot)
+      writeLines(c(&quot;\n&quot;, 
+                   &quot;Examine histograms.&quot;,
+                   &quot;Then press [enter] to continue.&quot;
+      ))
+      readline()
+      break
+    } else if (show_hist %in% c('N', 'n', 'No', 'no')) {
+      break
+    }
+  }
+}
+hist_prompt()</code></pre>
 </div>
 <div id="commented-code-chunks-4" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
+<p>The function that enables this interactive session is designated <code>hist_prompt</code>. <code>writeLines</code> prints user instructions for model selection to the console as a numbered list, using the escape character to insert line breaks in the printed text.</p>
+<pre class="r"><code>hist_prompt &lt;- function() {
+  writeLines(&quot;\nDo you want to examine histograms showing the distribution of the score to be normed, by agestrat?&quot;)</code></pre>
+<p>The interactive session runs within the structure of a repeat loop <code>base::repeat{}</code>. In a repeat loop, the loop keeps iterating until R encounters a specific instruction to pass control outside the loop. Here, the default output of the iterating loop is the console prompt <code>Enter Y or N:</code>, which is printed as the <code>prompt</code> argument of <code>readline</code>, which pauses execution and awaits user input. That user input is coerced into a string <code>base::as.character</code>, and assigned to <code>show_hist</code> so it can be used to control logical flow in downstream code.</p>
+<p>The <code>base::if</code> statement controls what happens if the user entry signifies “Yes” (i.e., the value of <code>show_hist</code> is among <code>%in%</code> this set of character values: `c(‘Y’, ‘y’, ‘Yes’, ‘yes’). Under this condition, the code for generating the age-stratified histograms executes.</p>
+<pre class="r"><code>  repeat {
+    show_hist &lt;-
+      suppressWarnings(as.character(readline(prompt = &quot;Enter Y or N: &quot;)))
+    if (show_hist %in% c('Y', 'y', 'Yes', 'yes')) {</code></pre>
 <p><code>ggplot</code> takes data frame <code>ANTraw_by_agestrat</code> as input, yielding histogram <code>geom_histogram</code> showing the distribution of variable <code>aes(ANT_total)</code>. Plot output is assigned to <code>hist_plot</code> so that plot will print when code is executed from source. <code>binwidth</code> controls width of histogram columns, <code>col</code> controls color of column outlines. Adjust the values of these arguments to change the appearance of the graph.</p>
-<pre class="r"><code>hist_plot &lt;- ggplot(data = ANTraw_by_agestrat, aes(ANT_total)) +
-  geom_histogram(
-    binwidth = .2,
-    col = &quot;red&quot;
-  ) +</code></pre>
+<pre class="r"><code>      hist_plot &lt;- ggplot(data = eval(as.name(paste0(score_name, '_raw_by_agestrat'))), aes(eval(as.name(score_name)))) +
+        geom_histogram(
+          binwidth = .2,
+          col = &quot;red&quot;
+        ) +</code></pre>
 <p><code>scale_y_continuous</code> applies new scale to y axis, using argument <code>breaks</code>. <code>seq</code> sets scale ranging from 0 to 20, in increments of 1.</p>
-<pre class="r"><code>  scale_y_continuous(breaks = seq(0, 20, 1)) +</code></pre>
-<p><code>labs</code> can be used to provide text labels for the graph, in this case a title.</p>
-<pre class="r"><code>  labs(title = &quot;Frequency Distribution&quot;) + </code></pre>
+<pre class="r"><code>        scale_y_continuous(breaks = seq(0, 20, 1)) +</code></pre>
+<p><code>labs</code> can be used to provide text labels for the graph, in this case titles and labels for the x- and y-axes.</p>
+<pre class="r"><code>        labs(title = &quot;Frequency Distribution&quot;, x = &quot;Each bin is a count of a specific Total Score value&quot;, y = &quot;Each histogram is an agestrat&quot;) +</code></pre>
+<p><code>ggplot2::stat_function</code> superimposes an additional graphic layer on top of the histogram created by <code>ggplot</code>. Here <code>stat_function</code> draws normal probability curves (which are line graphs; the default <code>geom</code> of <code>stat_function</code> is a line).</p>
+<p>The argument <code>fun</code> defines an anonymous function with four arguments <code>function(x, mean, sd, n)</code>. In this function, the second, third, and fourth arguments are passed as arguments to another function <code>dnorm</code>. <code>dnorm</code> yields a normal probability density plot based on those input paramaters, which <code>function(x, mean, sd, n)</code> then multiplies by <code>n</code> to yield a drawn line that is proportional to the <code>n</code> of cases graphed in the histogram.</p>
+<p><code>args</code> provides values for the four arguments (parameters) that are fed into <code>function(x, mean, sd, n)</code> and <code>dnorm</code>. These values are: the input data object, the <code>mean</code> of the score being normed, the <code>sd</code> of the score being normed, and the <code>n</code> of cases of the score being normed (with the latter being defined as the <code>length</code> of the column containing the score to be normed, which <code>base::length()</code> can process as a numerical vector).</p>
+<pre class="r"><code>        stat_function(
+          fun = function(x, mean, sd, n){
+            n * dnorm(x = x, mean = mean, sd = sd)
+          },
+          args = with(eval(as.name(paste0(score_name, '_raw_by_agestrat'))), c(mean = mean(eval(as.name(score_name))), sd = sd(eval(as.name(score_name))), n
+                                                                               = length(eval(as.name(score_name)))))
+        ) +</code></pre>
 <p><code>theme</code> changes non-data elements of graphic, in this case by removing minor gridlines. <code>element_blank</code> means ‘draw nothing’.</p>
-<pre class="r"><code>  theme(panel.grid.minor=element_blank()) +</code></pre>
+<pre class="r"><code>        theme(panel.grid.minor=element_blank()) +</code></pre>
 <p><code>facet_wrap</code> generates separate histogram for each <code>agestrat</code>.</p>
-<pre class="r"><code>  facet_wrap(~agestrat)</code></pre>
+<pre class="r"><code>        facet_wrap(~agestrat)</code></pre>
 <p>Explicit <code>print</code> call ensures that plot will print when code is executed from source.</p>
-<pre class="r"><code>print(hist_plot)</code></pre>
-<p><br></p>
-</div>
-</div>
-<div id="generate-graphs-of-means-sds-by-agestrat." class="section level4">
-<h4>Generate graphs of means, SDs by agestrat.</h4>
-<div id="valid-code-to-run-6" class="section level6">
-<h6>VALID CODE TO RUN</h6>
-<pre class="r"><code>mean_plot &lt;- ggplot(data = ANT_tot_desc_agestrat, aes(group, mean)) +
-  geom_point(
-    col = &quot;blue&quot;,
-    fill = &quot;blue&quot;, 
-    alpha = .5,
-    size = 3,
-    shape = 23
-  ) +
-  scale_x_continuous(breaks = seq(1, 27, 1), labels = agestrat) +
-  scale_y_continuous(breaks = seq(0, 50, 5), limits = c(0, 50)) + 
-  labs(title = &quot;Means&quot;, x = &quot;Agestrat&quot;, y = &quot;Mean Total Score&quot;)
-print(mean_plot)
-  
-sd_plot &lt;- ggplot(data = ANT_tot_desc_agestrat, aes(group, sd)) +
-  geom_point(
-    col = &quot;red&quot;,
-    fill = &quot;red&quot;, 
-    alpha = .5,
-    size = 3,
-    shape = 23
-  ) +
-  scale_x_continuous(breaks = seq(1, 27, 1), labels = agestrat) +
-  scale_y_continuous(breaks = seq(0, 10, 1), limits = c(0, 10)) + 
-  labs(title = &quot;SDs&quot;, x = &quot;Agestrat&quot;, y = &quot;SD Total Score&quot;)
-print(sd_plot)</code></pre>
+<pre class="r"><code>      print(hist_plot)</code></pre>
 <p><br></p>
 </div>
 </div>
@@ -707,27 +721,26 @@ print(sd_plot)</code></pre>
 <p>This section of code takes as input the age-stratified frequency table of the raw score for which norms are being created. The assumptions are that the distribution of raw scores within each age group is skewed (non-normal), and that because of small sample sizes, the age-stratified means and SDs may vary considerably from one age group to the next, and thus may not fit the hypothesized developmental growth curve for the ability being measured. The overall purpose of this R script is to use the input data to model the underlying developmental curve, and then construct well-functioning norms based on that model. ‘Well-functioning’ in this context means no unexpected changes or reversals in the standard score corresponding to a particular raw score, as the individual being assessed ages from one normative age-group to the next.</p>
 <p>The first step of this process is to normalize the raw score distributions within each age group. We begin by selecting five cumulative percentage (percentile) points: the median (<code>med</code>), and two points below below the median (<code>lo1</code>, <code>lo2</code>) and two above (<code>hi1</code>, <code>hi2</code>), with the latter four being as far out toward the tails of the distribution as possible. The possible values for the <code>lo</code> points are 5, 10, 15, 20, and 25, and the possible values for the <code>hi</code> points are 75, 80, 85, 90 and 95.</p>
 <p>Ideally, the values for <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code> would be 5, 10, 90 and 95, respectively. But in order to use 5 as the value for <code>lo1</code>, there needs to exist a cumulative percentage in the frequency table that is less than 5. The reason for this is that the formula for imputing normalized raw scores uses values from two adjacent rows in the frequency table. Thus, the value for <code>lo1</code> cannot sit on the lowest row of the frequency table, because it needs a trailing row (lag row) in order for the imputation formula to run.</p>
-<p>In many small sample size frequency tables, there exists no cumulative frequency value that is less than 5. For example the lowest value in the table might be 7.9, or 11.2. In these cases, the R code sets <code>lo1</code> at 10, or 15. The code automatically adjusts the values of <code>lo1</code>, <code>lo2</code> and <code>hi1</code> to ensure that the rows associated with these values always have a trailing row, and so that <code>lo2</code> sits on a different row than <code>lo1</code>, and <code>hi1</code> sits on a different row than <code>hi2</code>. In constrast to the other three points, <code>hi2</code> is a constant; its value is always set at 95. Because <code>hi2</code> sits at the top of the frequency distribution, it always has a trailing row and thus its value can be locked at the optimal value of 95.</p>
+<p>In frequency tables based on small sample sizes, there often exists no cumulative percentage value that is less than 5. For example the lowest value in the table might be 7.9, or 11.2. In these cases, the R code sets <code>lo1</code> at 10, or 15. The code automatically adjusts the values of <code>lo1</code>, <code>lo2</code> and <code>hi1</code> to ensure that the rows associated with these values always have a trailing row, and so that <code>lo2</code> sits on a different row than <code>lo1</code>, and <code>hi1</code> sits on a different row than <code>hi2</code>. In constrast to the other three points, <code>hi2</code> is a constant; its value is always set at 95. Because <code>hi2</code> sits at the top of the frequency distribution, it always has a trailing row and thus its value can be locked at the optimal value of 95.</p>
 <p><code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code> are used later used to impute raw scores that <strong>WOULD</strong> be associated with each point, <strong>IF</strong> the raw scores were normally distributed. The next section of code processes the age-stratified frequency table and chooses lo1, lo2, hi1, and hi2 for each age group.</p>
-<div id="valid-code-to-run-7" class="section level6">
+<div id="valid-code-to-run-6" class="section level6">
 <h6>VALID CODE TO RUN</h6>
-<pre class="r"><code>ANT_tot_age_lo1lo2_hi1hi2 &lt;-
-  full_join(
-    ANT_tot_freq_agestrat,
-    (
-      ANT_tot_freq_agestrat %&gt;%
-        group_by(agestrat) %&gt;%
-        summarise(min = min(cum_per)) %&gt;%
-        mutate(lo1 = case_when(
-          min &lt; 5 ~ 5,
-          min &lt; 10 ~ 10,
-          min &lt; 15 ~ 15,
-          min &lt; 20 ~ 20,
-          TRUE ~ 25
-        ))
-    ),
-    by = 'agestrat'
-  ) %&gt;%
+<pre class="r"><code>full_join(
+  eval(as.name(paste0(score_name, '_freq_agestrat'))),
+  (
+    eval(as.name(paste0(score_name, '_freq_agestrat'))) %&gt;%
+      group_by(agestrat) %&gt;%
+      summarise(min = min(cum_per)) %&gt;%
+      mutate(lo1 = case_when(
+        min &lt; 5 ~ 5,
+        min &lt; 10 ~ 10,
+        min &lt; 15 ~ 15,
+        min &lt; 20 ~ 20,
+        TRUE ~ 25
+      ))
+  ),
+  by = 'agestrat'
+) %&gt;%
   group_by(agestrat) %&gt;% mutate(flag = case_when(cum_per &gt; lo1 &amp;
                                                    cum_per &lt; 95 ~ 1,
                                                  TRUE ~ 0)) %&gt;% filter(flag == 1) %&gt;% summarise(min = min(cum_per),
@@ -751,39 +764,40 @@ print(sd_plot)</code></pre>
                     max &gt; 80 ~ 80,
                     TRUE ~ 75),
     hi2 = 95
-  ) %&gt;% select(-min,-max)</code></pre>
+  ) %&gt;% 
+  select(-min,-max) %&gt;% 
+  assign(paste0(score_name, '_age_lo1lo2_hi1hi2'), ., envir = .GlobalEnv)</code></pre>
 </div>
 <div id="commented-code-chunks-5" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
-<p>Initializes an output table <code>ANT_tot_age_lo1lo2_hi1hi2</code>. <code>full_join</code> is analogous to SPSS MATCH FILES, in that it combines the columns of two tables (adding variables, not cases) according to the values of an index variable <code>by</code>. <code>full_join</code> keeps all values and all rows of the two tables that it combines. The code chunk below identifies the LHS table used by <code>full_join</code> as <code>ANT_tot_freq_agestrat</code>, the age-stratified frequency table.</p>
-<pre class="r"><code>ANT_tot_age_lo1lo2_hi1hi2 &lt;-
-  full_join(
-    ANT_tot_freq_agestrat,</code></pre>
-<p>The next code chunk identifies the RHS table used by <code>full_join</code> as a transformed version of <code>ANT_tot_freq_agestrat</code>, the age-stratified frequency table. <code>ANT_tot_freq_agestrat</code> is piped <code>%&gt;%</code> through a series of functions. First, the table is grouped by agestrat <code>group_by</code>. Then it is transformed into a summary table with one row per agestrat, and one variable <code>min</code>, which is the minimum value of cumulative percentage <code>cum_per</code> within each agestrat. Here <code>summarise</code> operates as a quasi-lookup function, finding the minimum value within a numerical vector. <code>mutate</code> adds a second column <code>lo1</code> to the summary table. <code>lo1</code> can take one of five values: 5, 10, 15, 20, or 25; it will take the lowest of these values that is still higher than the minimum cumulative percentile for that agestrat.</p>
+<p><code>dplyr::full_join()</code> is analogous to SPSS MATCH FILES, in that it combines the columns of two tables (adding variables, not cases) according to the values of an index variable <code>by</code>. <code>full_join</code> keeps all values and all rows of the two tables that it combines. The code chunk below identifies the LHS table used by <code>full_join</code> as the age-stratified frequency table for the score being normed.</p>
+<pre class="r"><code>full_join(
+  eval(as.name(paste0(score_name, '_freq_agestrat'))),
+  (</code></pre>
+<p>The next code chunk identifies the RHS table used by <code>full_join</code> as a transformed version of the age-stratified frequency table for the score being normed. This table (<code>eval(as.name(paste0(score_name, '_freq_agestrat')))</code>) is piped <code>%&gt;%</code> through a series of functions. First, the table is grouped by agestrat <code>group_by</code>. Then it is transformed into a summary table with one row per agestrat, and one variable <code>min</code>, which is the minimum value of cumulative percentage <code>cum_per</code> within each agestrat. Here <code>summarise</code> operates as a quasi-lookup function, finding the minimum value within a numerical vector. <code>mutate</code> adds a second column <code>lo1</code> to the summary table. <code>lo1</code> can take one of five values: 5, 10, 15, 20, or 25; it will take the lowest of these values that is still higher than the minimum cumulative percentile for that agestrat.</p>
 <p>Thus, values of <code>lo1</code> are coded according to values of <code>min</code> (the former depends on the latter). <code>case_when</code> performs this conditional transformation in a more elegant, readable way than nested <code>ifelse</code> statements. <code>min &lt; 5 ~ 5</code> states that when <code>min</code> is less than 5, <code>lo1</code> is coded 5, and so on. <code>TRUE</code> is equivalent to ELSE in this conditional logic.</p>
-<p>The last line of this code chunk completes the specification of <code>full_join</code>, stating that the LHS and RHS tables are joined <code>by</code> the index variable <code>agestrat</code>. The data object at this point has the same number of rows as the full frequency table <code>ANT_tot_freq_agestrat</code>. <code>full_join</code> applies (recycles) the values of the two new variables, <code>min</code> and <code>lo1</code>, of which there is one value per agestrat, to all cells within a given agestrat in the larger (taller, more rows) table, thus filling out the table completely with those values.</p>
-<pre class="r"><code>    (
-      ANT_tot_freq_agestrat %&gt;%
-        group_by(agestrat) %&gt;%
-        summarise(min = min(cum_per)) %&gt;%
-        mutate(lo1 = case_when(
-          min &lt; 5 ~ 5,
-          min &lt; 10 ~ 10,
-          min &lt; 15 ~ 15,
-          min &lt; 20 ~ 20,
-          TRUE ~ 25
-        ))
-    ),
-    by = 'agestrat'
-  ) %&gt;%</code></pre>
-<p>Next we pipe the current data object (a tall table with the same number of rows as <code>ANT_tot_freq_agestrat</code>) through a series of transformations that allow it to become the basis for calculating <code>lo2</code>. The table is regrouped by <code>agestrat</code>, to provide a basis for later collapsing it back into a table with one row per agestrat. <code>mutate</code> then adds a new variable <code>flag</code> that is coded conditionally by <code>case_when</code>, such that cases are flagged if their value on <code>cum_per</code> is greater than <code>lo1</code> and less than 95. This coding on flag allows the data object to be filtered in a way that simplifies the calculation of <code>lo2</code> in a later procedure.</p>
-<p>The object is piped through <code>filter</code>, which keeps only the flagged rows. <code>summarise</code> transforms the object again into a collapsed table with one row per agestrat, adding three variables: minimum value of <code>cum_per</code> per agestrat, maximum value of <code>cum_per</code> per agestrat, and first value of <code>lo1</code>. Because all values of <code>lo1</code> are identical within each agestrat, <code>first</code> is a convenient way of simply designating that value for <code>lo1</code> in the collapsed table.</p>
+<p>The last line of this code chunk completes the specification of <code>full_join</code>, stating that the LHS and RHS tables are joined <code>by</code> the index variable <code>agestrat</code>. The data object at this point has the same number of rows as the full (non-summarized) input frequency table. <code>full_join</code> applies (recycles) the values of the two new variables, <code>min</code> and <code>lo1</code>, of which there is one value per agestrat, to all cells within a given agestrat in the larger (taller, more rows) table, thus filling out the table completely with those values.</p>
+<pre class="r"><code>    eval(as.name(paste0(score_name, '_freq_agestrat'))) %&gt;%
+      group_by(agestrat) %&gt;%
+      summarise(min = min(cum_per)) %&gt;%
+      mutate(lo1 = case_when(
+        min &lt; 5 ~ 5,
+        min &lt; 10 ~ 10,
+        min &lt; 15 ~ 15,
+        min &lt; 20 ~ 20,
+        TRUE ~ 25
+      ))
+  ),
+  by = 'agestrat'
+) %&gt;%</code></pre>
+<p>Next we pipe the current data object (a tall table with the same number of rows as the input frequency table) through a series of transformations that allow it to become the basis for calculating <code>lo2</code>. The table is regrouped by <code>agestrat</code>, to provide a basis for later collapsing it back into a table with one row per agestrat. <code>mutate</code> then adds a new variable <code>flag</code> that is coded conditionally by <code>case_when</code>, such that cases are flagged if their value on <code>cum_per</code> is greater than <code>lo1</code> and less than 95. This coding on <code>flag</code> allows the data object to be filtered in a way that simplifies the calculation of <code>lo2</code> in a later procedure.</p>
+<p>The object is piped through <code>dplyr::filter</code>, which keeps only the flagged rows. <code>summarise</code> transforms the object again into a collapsed table with one row per agestrat, adding three variables: minimum value of <code>cum_per</code> per agestrat, maximum value of <code>cum_per</code> per agestrat, and first value of <code>lo1</code>. Because all values of <code>lo1</code> are identical within each agestrat, <code>first</code> is a convenient way of simply designating that value for <code>lo1</code> in the collapsed table.</p>
 <pre class="r"><code>  group_by(agestrat) %&gt;% mutate(flag = case_when(cum_per &gt; lo1 &amp;
                                                    cum_per &lt; 95 ~ 1,
                                                  TRUE ~ 0)) %&gt;% filter(flag == 1) %&gt;% summarise(min = min(cum_per),
                                                                                                 max = max(cum_per),
                                                                                                 lo1 = first(lo1)) %&gt;%</code></pre>
-<p>The current data object is a table with 27 rows, one for each agestrat. The next code chunk uses <code>mutate</code> to code <code>lo2</code> (possible values: 10, 15, 20, 25), <code>hi1</code> (possible values: 75, 80, 85, 90), and <code>hi2</code> (static value: 95). The conditional coding depends on varibles (<code>min</code>, <code>max</code>) that summarise the distribution of <code>cum_per</code> within each agestrat. Thus, R doesn’t need to access the distributions in the original age-stratified frequency table <code>ANT_tot_freq_agestrat</code> to determine the correct values for <code>lo2</code> and <code>hi1</code>.</p>
+<p>The current data object is a table with one row for each <code>agestrat</code>. The next code chunk uses <code>mutate</code> to code <code>lo2</code> (possible values: 10, 15, 20, 25), <code>hi1</code> (possible values: 75, 80, 85, 90), and <code>hi2</code> (static value: 95). The conditional coding depends on varibles (<code>min</code>, <code>max</code>) that summarise the distribution of <code>cum_per</code> within each agestrat. Thus, R doesn’t need to access the distributions in the original age-stratified frequency table to determine the correct values for <code>lo2</code> and <code>hi1</code>.</p>
 <pre class="r"><code>  mutate(
     lo2 = case_when(
       lo1 == 5 &amp; min &lt; 10 ~ 10,
@@ -801,16 +815,20 @@ print(sd_plot)</code></pre>
                     max &gt; 85 ~ 85,
                     max &gt; 80 ~ 80,
                     TRUE ~ 75),
-    hi2 = 95</code></pre>
-<p>The line of code below cleans up the current object <code>ANT_tot_age_lo1lo2_hi1hi2</code> for use in the next procedure. <code>select</code> drops the named columns preceded by <code>-</code> (minus sign). Without the minus sign, <code>select</code> would have kept only the named columns.</p>
-<pre class="r"><code>  ) %&gt;% select(-min,-max)</code></pre>
+    hi2 = 95
+  ) %&gt;% </code></pre>
+<p>The next snippet cleans up the current data object for use in the next procedure. <code>select</code> drops the named columns preceded by <code>-</code> (minus sign). Without the minus sign, <code>select</code> would have kept only the named columns. Finally, <code>assign</code> gives the data object a name and assigns it to the global environment for use by downstream code.</p>
+<pre class="r"><code>  select(-min,-max) %&gt;% 
+  assign(paste0(score_name, '_age_lo1lo2_hi1hi2'), ., envir = .GlobalEnv)</code></pre>
+</div>
+</div>
+<div id="start-here" class="section level2">
+<h2>START HERE</h2>
 <p><br></p>
-</div>
-</div>
 <div id="generate-imputed-medians-lo-and-hi-sds-by-agestrat" class="section level4">
 <h4>Generate imputed medians, lo and hi SDs by agestrat</h4>
 <p>The process of normalizing each age-group raw score distribution continues, by adding columns for the imputed median, and standard deviations above and below the median (lo_SD, hi_SD). Dividing the standard deviation into two components contributes to normalization by compensating for the skewness in the original raw score distributions.</p>
-<div id="valid-code-to-run-8" class="section level6">
+<div id="valid-code-to-run-7" class="section level6">
 <h6>VALID CODE TO RUN</h6>
 <pre class="r"><code>norm_build1 &lt;-
   ANT_tot_freq_agestrat %&gt;% left_join(ANT_tot_age_lo1lo2_hi1hi2, by = 'agestrat') %&gt;% mutate (
@@ -958,7 +976,7 @@ norm_build_med_hilo_sum &lt;-
 <p>To generate the smoothed median for each age group, you choose between a 1st, 2nd, or 3rd-order polynomial equation as the smoothing forumula. The code generates fitted plots for each of these models, showing the regression coefficients and R<sup>2</sup> for each, allowing you to choose the appropriate model. The 3rd-order polynomial usually provides the best fit. You can also inspect the plots for the 2nd- and 1st-order polynomials, to determine if a reasonably good fit can be achieved with a more parsimonius model.</p>
 <p>For the lo_SDs and hi SDs, the code produces plots of the 1st-order (straight line) model and the mean substitution (horizontal line) model. Again, you select the model by examining the plots and judging which model best fits the data.</p>
 <p>Model selection is done via an interactive session. The console lists the model choices and prompts you to examine the plots and make a selection, successively for median, lo_SD, and hi_SD. In order for this interactive feature to work, the entire script must be executed from source, using <code>command-shift-S</code>.</p>
-<div id="valid-code-to-run-9" class="section level6">
+<div id="valid-code-to-run-8" class="section level6">
 <h6>VALID CODE TO RUN</h6>
 <pre class="r"><code>rm(ANT_tot_age_lo1lo2_hi1hi2, ANTraw_by_agestrat, norm_build1)
 
@@ -1153,7 +1171,7 @@ lo_hi &lt;- c('lo_SD', 'hi_SD')</code></pre>
 <h4>Estimate smoothed lo_SDs, hi_SDs</h4>
 <p>The code for estimating smoothed values for the lo_SDs and hi_SDs is analogous to that detailed above for the smoothed medians. The operations flow from plotting the imputed values with lines for 1st-order polynomial and mean-subsitution smoothing models, to initializing functions that will smooth the SDs based on these two models, to using an interactive session to select the smoothing models for the SDs. This process is completed first for the lo_SDs, and then for the hi_SDs. This section of code concludes by generating the summary table that is used in downstream norming processes, and removing unneeded objects from the global environment.</p>
 <p>The code is only documented in detail where it differs from previous code.</p>
-<div id="valid-code-to-run-10" class="section level6">
+<div id="valid-code-to-run-9" class="section level6">
 <h6>VALID CODE TO RUN</h6>
 <pre class="r"><code>lo_SD_1st_plot &lt;-
   ggplot(norm_build_med_hilo_sum, aes(x = group, y = lo_SD)) +
@@ -1349,6 +1367,7 @@ rm(list = ls()[!ls() %in% c(&quot;smooth_med_SD&quot;, &quot;model_median&quot;,
   mutate(ES_sm = round((median_sm - lag(median_sm)) / ((
     lo_SD_sm + lag(lo_SD_sm) + hi_SD_sm + lag(hi_SD_sm)
   ) / 4), 3))</code></pre>
+</div>
 </div>
 </div>
 

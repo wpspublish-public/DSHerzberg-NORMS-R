@@ -75,7 +75,6 @@ scale_y_break_options <- seq(0, max_mean+(2*max_SD), 5)
 scale_y_ceiling_mean <- scale_y_break_options[which.min(abs(scale_y_break_options - (max_mean+(2*max_SD))))]
 scale_y_ceiling_SD <- scale_y_break_options[which.min(abs(scale_y_break_options - (max_SD+(max_SD/2))))]
 
-# Create Z score table
 perc_z <- tribble(
   ~lohi_value,	~z_score,
   5, 1.6449,
@@ -142,7 +141,6 @@ mean_plot_prompt <- function() {
 }
 mean_plot_prompt ()
 
-# prompt whether user wants to inspect histograms by agestrat
 hist_prompt <- function() {
   writeLines("\nDo you want to examine histograms showing the distribution of the score to be normed, by agestrat?")
   repeat {
@@ -219,7 +217,8 @@ full_join(
                     max > 80 ~ 80,
                     TRUE ~ 75),
     hi2 = 95
-  ) %>% select(-min,-max) %>% 
+  ) %>% 
+  select(-min,-max) %>% 
   assign(paste0(score_name, '_age_lo1lo2_hi1hi2'), ., envir = .GlobalEnv)
 
 #$$$$$$$$$$$NOTE: norm_perc_prompt CODE BELOW NOT PROPIGATED TO MARKDOWN OR CASL-2 SCRIPTS
@@ -1162,9 +1161,9 @@ invisible(readline())
 
 # create table with only vars needed to calc standard scores
 final_med_SD <- smooth_med_SD %>% select(agestrat, median_sm, lo_SD_sm, hi_SD_sm) %>% mutate_at(vars(agestrat), ~ paste0("mo_", .x))
-# define column names for lookup stable by creating charvec of agestrat labels
-# agelabels <- final_med_SD %>% pull(agestrat) %>% paste0("mo_", .)
-# create empty look up table by binding column of all possible raw scores to set of columns holding numerical NAs, naming each column in set using agelabels charvec
+
+# create empty look up table by binding column of all possible raw scores to set
+# of columns holding numerical NAs, naming each column in set using agestrat labels
 raw_to_SS_lookup_empty <- bind_cols(
   enframe(min_raw:max_raw, name = NULL, value = 'rawscore'),
   data.frame(matrix(NA_real_, nrow = max_raw + 1, ncol = num_agestrat)) %>%
@@ -1260,14 +1259,14 @@ norms_pub <- raw_to_SS_lookup %>%
   # filter step retains all 1-row groups, and the first and last rows of any
   # multi-row groups. n() == 1 returns 1-row groups; n() > 1 & row_number()
   # %in% c(1, n()) returns rows of multi-row groups with the row number of
-  # either 1 (first row), or n() which is the number or rows and also the
+  # either 1 (first row), or n() which is the number of rows and also the
   # number of the last row. The first and last rows hold the min and max
   # values of raw for that value of SS (the grouping variable)
   filter(n() == 1 | n() > 1 & row_number()  %in% c(1, n())) %>%
   # Summarise creates a table with one row per group (one row per
   # possible value of SS). For the 1-row groups, str_c simply passes the
   # value of raw as a string; for the multi-row groups, str_c joins the min
-  # and max values of raw with the '=' separator.
+  # and max values of raw with the '--' separator.
   summarise(rawscore = str_c(rawscore, collapse = '--')) %>%
   # recode missing values of raw to '-'
   mutate_at(vars(rawscore), ~ case_when(is.na(.x) ~ '-', TRUE ~ .x)) %>%
@@ -1281,7 +1280,7 @@ norms_pub <- raw_to_SS_lookup %>%
   # apply desired final column names
   select(SS, norms_names)
 
-# write final raw-to-SS lookup table to .csv
+# write final print raw-to-SS lookup table to .csv
 write_csv(norms_pub, here(
   paste0(
     'OUTPUT-FILES/FINAL-RAW-TO-SS-LOOKUP-TABLES/',

@@ -335,7 +335,7 @@ eval(as.name(paste0(score_name, '_desc_agestrat'))) %>% print(n = nrow(.))
 
 ###### COMMENTED CODE CHUNKS
 `ggplot()` takes as input the table of descriptive statistics (named by `eval(as.name(paste0(score_name, '_desc_agestrat')))`), yielding a scatterplot `geom_point` that maps `group` (a proxy for `agestrat`) to the x-axis and raw score `mean` to the y-axis, using the argument `aes(group, mean)`. Plot output is assigned to `mean_plot` so that the plot will print when the code is executed from source. `col` controls the color of the plot point perimeter; `fill` controls the color of the point interior. You can adjust the values of these arguments to change the appearance of the graph. Other useful argments include `alpha` (controls transparency of data element, values 0-1), `size` (of data points), `shape` (designated by a number, which can be obtained from charts on the internet).
-```{r RSmean_plot, echo=1:8, eval=FALSE}
+```{r RSmean_plot, echo=7:15, eval=FALSE}
 ```
 `ggplot` builds out graphs one layer at a time. Additional layers are added using the `+` operator. The first layer on top of the basic scatterplot is given by `ggrepel::geom_label_repel()`. This applies labels to the mean points `aes(label = mean)`. 
 These labels "repel" away from the points so that the numerical value of the mean is not sitting right on top of the corresponding plot point itself. The appearance of these labels, as well as their proximity to the plot points, is controlled by the arguments `hjust`, `vjust`, `label.padding`, `size`, and `col`.
@@ -355,20 +355,18 @@ The next snippet prints the table of descriptive statistics by `agestrat` to the
 
 <br>
 
-#################start here###################
+#### Pause execution for user to examine descriptives table, plot
 
-#### Pause execution for user to examine plot
-
-When the code is sourced, the following chunk pauses execution and prompts the user to examine the newly created plot of raw score means and SDs.
+When the code is sourced, the following snippet pauses execution and prompts the user to examine the newly created plot of raw score means and SDs.
 
 ###### VALID CODE TO RUN
 ```{r mean_plot_prompt, eval=FALSE}
 mean_plot_prompt <- function() {
-  writeLines(c(
-    strrep("\u2500", 40),
-    "Examine plot of raw score means and SDs.",
-    "Then press [enter] to continue.",
-    strrep("\u2500", 40)
+  writeLines(c("\n", 
+               strrep("\u2500", 80),
+               "Examine descriptives (above); graph of raw score means, SDs (plot pane on right).",
+               "Then press [enter] to continue.",
+               strrep("\u2500", 80)
   ))
   readline()
 }
@@ -387,71 +385,81 @@ mean_plot_prompt ()
 
 <br>
 
-#### Generate histograms by agestrat
+#### Pause execution for user input; generate histograms by agestrat
+
+When the code is sourced, the following snippet pauses execution to ask whether the user wants to view histograms by agestrat of the score being normed.
 
 ###### VALID CODE TO RUN
 ```{r hist, eval=FALSE}
-hist_plot <- ggplot(data = ANTraw_by_agestrat, aes(ANT_total)) +
-  geom_histogram(
-    binwidth = .2,
-    col = "red"
-  ) +
-  scale_y_continuous(breaks = seq(0, 20, 1)) +
-  labs(title = "Frequency Distribution") + 
-  theme(panel.grid.minor=element_blank()) +
-  facet_wrap(~agestrat)
-print(hist_plot)
+hist_prompt <- function() {
+  writeLines("\nDo you want to examine histograms showing the distribution of the score to be normed, by agestrat?")
+  repeat {
+    show_hist <-
+      suppressWarnings(as.character(readline(prompt = "Enter Y or N: ")))
+    if (show_hist %in% c('Y', 'y', 'Yes', 'yes')) {
+      hist_plot <- ggplot(data = eval(as.name(paste0(score_name, '_raw_by_agestrat'))), aes(eval(as.name(score_name)))) +
+        geom_histogram(
+          binwidth = .2,
+          col = "red"
+        ) +
+        scale_y_continuous(breaks = seq(0, 20, 1)) +
+        labs(title = "Frequency Distribution", x = "Each bin is a count of a specific Total Score value", y = "Each histogram is an agestrat") +
+        stat_function(
+          fun = function(x, mean, sd, n){
+            n * dnorm(x = x, mean = mean, sd = sd)
+          },
+          args = with(eval(as.name(paste0(score_name, '_raw_by_agestrat'))), c(mean = mean(eval(as.name(score_name))), sd = sd(eval(as.name(score_name))), n
+                                                                               = length(eval(as.name(score_name)))))
+        ) +
+        theme(panel.grid.minor=element_blank()) +
+        facet_wrap(~agestrat)
+      print(hist_plot)
+      writeLines(c("\n", 
+                   "Examine histograms.",
+                   "Then press [enter] to continue."
+      ))
+      readline()
+      break
+    } else if (show_hist %in% c('N', 'n', 'No', 'no')) {
+      break
+    }
+  }
+}
+hist_prompt()
 ```
 ###### COMMENTED CODE CHUNKS
+The function that enables this interactive session is designated `hist_prompt`. `writeLines` prints user instructions for model selection to the console as a numbered list, using the escape character \n to insert line breaks in the printed text.
+```{r hist, echo=1:2, eval=FALSE}
+```
+The interactive session runs within the structure of a repeat loop `base::repeat{}`. In a repeat loop, the loop keeps iterating until R encounters a specific instruction to pass control outside the loop. Here, the default output of the iterating loop is the console prompt `Enter Y or N: `, which is printed as the `prompt` argument of `readline`, which pauses execution and awaits user input. That user input is coerced into a string `base::as.character`, and assigned to `show_hist` so it can be used to control logical flow in downstream code.
+
+The `base::if` statement controls what happens if the user entry signifies "Yes" (i.e., the value of `show_hist` is among `%in%` this set of character values: `c('Y', 'y', 'Yes', 'yes'). Under this condition, the code for generating the age-stratified histograms executes.
+```{r hist, echo=3:6, eval=FALSE}
+```
 `ggplot` takes data frame `ANTraw_by_agestrat` as input, yielding histogram `geom_histogram` showing the distribution of variable `aes(ANT_total)`. Plot output is assigned to `hist_plot` so that plot will print when code is executed from source. `binwidth` controls width of histogram columns, `col` controls color of column outlines. Adjust the values of these arguments to change the appearance of the graph. 
-```{r hist, echo=1:5, eval=FALSE}
+```{r hist, echo=7:11, eval=FALSE}
 ```
 `scale_y_continuous` applies new scale to y axis, using argument `breaks`. `seq` sets scale ranging from 0 to 20, in increments of 1. 
-```{r hist, echo=6, eval=FALSE}
+```{r hist, echo=12, eval=FALSE}
 ```
-`labs` can be used to provide text labels for the graph, in this case a title.
-```{r hist, echo=7, eval=FALSE}
+`labs` can be used to provide text labels for the graph, in this case titles and labels for the x- and y-axes.
+```{r hist, echo=13, eval=FALSE}
+```
+`ggplot2::stat_function` superimposes an additional graphic layer on top of the histogram created by `ggplot`. Here `stat_function` draws normal probability curves (which are line graphs; the default `geom` of `stat_function` is a line). 
+
+The argument `fun` defines an anonymous function with four arguments `function(x, mean, sd, n)`. In this function, the second, third, and fourth arguments are passed as arguments to another function `dnorm`. `dnorm` yields a normal probability density plot based on those input paramaters, which `function(x, mean, sd, n)` then multiplies by `n` to yield a drawn line that is proportional to the `n` of cases graphed in the histogram. 
+
+`args` provides values for the four arguments (parameters) that are fed into `function(x, mean, sd, n)` and `dnorm`. These values are: the input data object, the `mean` of the score being normed, the `sd` of the score being normed, and the `n` of cases of the score being normed (with the latter being defined as the `length` of the column containing the score to be normed, which `base::length()` can process as a numerical vector).
+```{r hist, echo=14:20, eval=FALSE}
 ```
 `theme` changes non-data elements of graphic, in this case by removing minor gridlines. `element_blank` means 'draw nothing'.
-```{r hist, echo=8, eval=FALSE}
+```{r hist, echo=21, eval=FALSE}
 ```
 `facet_wrap` generates separate histogram for each `agestrat`. 
-```{r hist, echo=9, eval=FALSE}
+```{r hist, echo=22, eval=FALSE}
 ```
 Explicit `print` call ensures that plot will print when code is executed from source.
-```{r hist, echo=10, eval=FALSE}
-```
-<br>
-
-#### Generate graphs of means, SDs by agestrat.
-
-###### VALID CODE TO RUN
-```{r mean_SD_graph, eval=FALSE}
-mean_plot <- ggplot(data = ANT_tot_desc_agestrat, aes(group, mean)) +
-  geom_point(
-    col = "blue",
-    fill = "blue", 
-    alpha = .5,
-    size = 3,
-    shape = 23
-  ) +
-  scale_x_continuous(breaks = seq(1, 27, 1), labels = agestrat) +
-  scale_y_continuous(breaks = seq(0, 50, 5), limits = c(0, 50)) + 
-  labs(title = "Means", x = "Agestrat", y = "Mean Total Score")
-print(mean_plot)
-  
-sd_plot <- ggplot(data = ANT_tot_desc_agestrat, aes(group, sd)) +
-  geom_point(
-    col = "red",
-    fill = "red", 
-    alpha = .5,
-    size = 3,
-    shape = 23
-  ) +
-  scale_x_continuous(breaks = seq(1, 27, 1), labels = agestrat) +
-  scale_y_continuous(breaks = seq(0, 10, 1), limits = c(0, 10)) + 
-  labs(title = "SDs", x = "Agestrat", y = "SD Total Score")
-print(sd_plot)
+```{r hist, echo=23, eval=FALSE}
 ```
 
 <br>
@@ -464,29 +472,28 @@ The first step of this process is to normalize the raw score distributions withi
 
 Ideally, the values for `lo1`, `lo2`, `hi1` and `hi2` would be 5, 10, 90 and 95, respectively. But in order to use 5 as the value for `lo1`, there needs to exist a cumulative percentage in the frequency table that is less than 5. The reason for this is that the formula for imputing normalized raw scores uses values from two adjacent rows in the frequency table. Thus, the value for `lo1` cannot sit on the lowest row of the frequency table, because it needs a trailing row (lag row) in order for the imputation formula to run.
 
-In many small sample size frequency tables, there exists no cumulative frequency value that is less than 5. For example the lowest value in the table might be 7.9, or 11.2. In these cases, the R code sets `lo1` at 10, or 15. The code automatically adjusts the values of `lo1`, `lo2` and `hi1` to ensure that the rows associated with these values always have a trailing row, and so that `lo2` sits on a different row than `lo1`, and `hi1` sits on a different row than `hi2`. In constrast to the other three points, `hi2` is a constant; its value is always set at 95. Because `hi2` sits at the top of the frequency distribution, it always has a trailing row and thus its value can be locked at the optimal value of 95.
+In frequency tables based on small sample sizes, there often exists no cumulative percentage value that is less than 5. For example the lowest value in the table might be 7.9, or 11.2. In these cases, the R code sets `lo1` at 10, or 15. The code automatically adjusts the values of `lo1`, `lo2` and `hi1` to ensure that the rows associated with these values always have a trailing row, and so that `lo2` sits on a different row than `lo1`, and `hi1` sits on a different row than `hi2`. In constrast to the other three points, `hi2` is a constant; its value is always set at 95. Because `hi2` sits at the top of the frequency distribution, it always has a trailing row and thus its value can be locked at the optimal value of 95.
 
 `lo1`, `lo2`, `hi1` and `hi2` are used later used to impute raw scores that __WOULD__ be associated with each point, __IF__ the raw scores were normally distributed. The next section of code processes the age-stratified frequency table and chooses lo1, lo2, hi1, and hi2 for each age group.
 
 ###### VALID CODE TO RUN
 ```{r lo_hi_SD, eval=FALSE}
-ANT_tot_age_lo1lo2_hi1hi2 <-
-  full_join(
-    ANT_tot_freq_agestrat,
-    (
-      ANT_tot_freq_agestrat %>%
-        group_by(agestrat) %>%
-        summarise(min = min(cum_per)) %>%
-        mutate(lo1 = case_when(
-          min < 5 ~ 5,
-          min < 10 ~ 10,
-          min < 15 ~ 15,
-          min < 20 ~ 20,
-          TRUE ~ 25
-        ))
-    ),
-    by = 'agestrat'
-  ) %>%
+full_join(
+  eval(as.name(paste0(score_name, '_freq_agestrat'))),
+  (
+    eval(as.name(paste0(score_name, '_freq_agestrat'))) %>%
+      group_by(agestrat) %>%
+      summarise(min = min(cum_per)) %>%
+      mutate(lo1 = case_when(
+        min < 5 ~ 5,
+        min < 10 ~ 10,
+        min < 15 ~ 15,
+        min < 20 ~ 20,
+        TRUE ~ 25
+      ))
+  ),
+  by = 'agestrat'
+) %>%
   group_by(agestrat) %>% mutate(flag = case_when(cum_per > lo1 &
                                                    cum_per < 95 ~ 1,
                                                  TRUE ~ 0)) %>% filter(flag == 1) %>% summarise(min = min(cum_per),
@@ -510,31 +517,36 @@ ANT_tot_age_lo1lo2_hi1hi2 <-
                     max > 80 ~ 80,
                     TRUE ~ 75),
     hi2 = 95
-  ) %>% select(-min,-max)
+  ) %>% 
+  select(-min,-max) %>% 
+  assign(paste0(score_name, '_age_lo1lo2_hi1hi2'), ., envir = .GlobalEnv)
 ```
 
 ###### COMMENTED CODE CHUNKS
-Initializes an output table `ANT_tot_age_lo1lo2_hi1hi2`. `full_join` is analogous to SPSS MATCH FILES, in that it combines the columns of two tables (adding variables, not cases) according to the values of an index variable `by`. `full_join` keeps all values and all rows of the two tables that it combines. The code chunk below identifies the LHS table used by `full_join` as `ANT_tot_freq_agestrat`, the age-stratified frequency table.
+`dplyr::full_join()` is analogous to SPSS MATCH FILES, in that it combines the columns of two tables (adding variables, not cases) according to the values of an index variable `by`. `full_join` keeps all values and all rows of the two tables that it combines. The code chunk below identifies the LHS table used by `full_join` as the age-stratified frequency table for the score being normed.
 ```{r lo_hi_SD, echo=1:3, eval=FALSE}
 ```
-The next code chunk identifies the RHS table used by `full_join` as a transformed version of `ANT_tot_freq_agestrat`, the age-stratified frequency table. `ANT_tot_freq_agestrat` is piped `%>%` through a series of functions. First, the table is grouped by agestrat `group_by`. Then it is transformed into a summary table with one row per agestrat, and one variable `min`, which is the minimum value of cumulative percentage `cum_per` within each agestrat. Here `summarise` operates as a quasi-lookup function, finding the minimum value within a numerical vector. `mutate` adds a second column `lo1` to the summary table. `lo1` can take one of five values: 5, 10, 15, 20, or 25; it will take the lowest of these values that is still higher than the  minimum cumulative percentile for that agestrat.  
+The next code chunk identifies the RHS table used by `full_join` as a transformed version of the age-stratified frequency table for the score being normed. This table (`eval(as.name(paste0(score_name, '_freq_agestrat')))`) is piped `%>%` through a series of functions. First, the table is grouped by agestrat `group_by`. Then it is transformed into a summary table with one row per agestrat, and one variable `min`, which is the minimum value of cumulative percentage `cum_per` within each agestrat. Here `summarise` operates as a quasi-lookup function, finding the minimum value within a numerical vector. `mutate` adds a second column `lo1` to the summary table. `lo1` can take one of five values: 5, 10, 15, 20, or 25; it will take the lowest of these values that is still higher than the  minimum cumulative percentile for that agestrat.  
 
 Thus, values of `lo1` are coded according to values of `min` (the former depends on the latter). `case_when` performs this conditional transformation in a more elegant, readable way than nested `ifelse` statements. `min < 5 ~ 5` states that when `min` is less than 5, `lo1` is coded 5, and so on. `TRUE` is equivalent to ELSE in this conditional logic.  
 
-The last line of this code chunk completes the specification of `full_join`, stating that the LHS and RHS tables are joined `by` the index variable `agestrat`. The data object at this point has the same number of rows as the full frequency table `ANT_tot_freq_agestrat`. `full_join` applies (recycles) the values of the two new variables, `min` and `lo1`, of which there is one value per agestrat, to all cells within a given agestrat in the larger (taller, more rows) table, thus filling out the table completely with those values.
-```{r lo_hi_SD, echo=4:17, eval=FALSE}
+The last line of this code chunk completes the specification of `full_join`, stating that the LHS and RHS tables are joined `by` the index variable `agestrat`. The data object at this point has the same number of rows as the full (non-summarized) input frequency table. `full_join` applies (recycles) the values of the two new variables, `min` and `lo1`, of which there is one value per agestrat, to all cells within a given agestrat in the larger (taller, more rows) table, thus filling out the table completely with those values.
+```{r lo_hi_SD, echo=4:16, eval=FALSE}
 ```
-Next we pipe the current data object (a tall table with the same number of rows as `ANT_tot_freq_agestrat`) through a series of transformations that allow it to become the basis for calculating `lo2`. The table is regrouped by `agestrat`, to provide a basis for later collapsing it back into a table with one row per agestrat. `mutate` then adds a new variable `flag` that is coded conditionally by `case_when`, such that cases are flagged if their value on `cum_per` is greater than `lo1` and less than 95. This coding on flag allows the data object to be filtered in a way that simplifies the calculation of `lo2` in a later procedure.  
+Next we pipe the current data object (a tall table with the same number of rows as the input frequency table) through a series of transformations that allow it to become the basis for calculating `lo2`. The table is regrouped by `agestrat`, to provide a basis for later collapsing it back into a table with one row per agestrat. `mutate` then adds a new variable `flag` that is coded conditionally by `case_when`, such that cases are flagged if their value on `cum_per` is greater than `lo1` and less than 95. This coding on `flag` allows the data object to be filtered in a way that simplifies the calculation of `lo2` in a later procedure.  
 
-The object is piped through `filter`, which keeps only the flagged rows. `summarise` transforms the object again into a collapsed table with one row per agestrat, adding three variables: minimum value of `cum_per` per agestrat, maximum value of `cum_per` per agestrat, and first value of `lo1`. Because all values of `lo1` are identical within each agestrat, `first` is a convenient way of simply designating that value for `lo1` in the collapsed table.
-```{r lo_hi_SD, echo=18:22, eval=FALSE}
+The object is piped through `dplyr::filter`, which keeps only the flagged rows. `summarise` transforms the object again into a collapsed table with one row per agestrat, adding three variables: minimum value of `cum_per` per agestrat, maximum value of `cum_per` per agestrat, and first value of `lo1`. Because all values of `lo1` are identical within each agestrat, `first` is a convenient way of simply designating that value for `lo1` in the collapsed table.
+```{r lo_hi_SD, echo=17:21, eval=FALSE}
 ```
-The current data object is a table with 27 rows, one for each agestrat. The next code chunk uses `mutate` to code `lo2` (possible values: 10, 15, 20, 25), `hi1` (possible values: 75, 80, 85, 90), and `hi2` (static value: 95). The conditional coding depends on varibles (`min`, `max`) that summarise the distribution of `cum_per` within each agestrat. Thus, R doesn't need to access the distributions in the original age-stratified frequency table `ANT_tot_freq_agestrat` to determine the correct values for `lo2` and `hi1`.
-```{r lo_hi_SD, echo=23:40, eval=FALSE}
+The current data object is a table with one row for each `agestrat`. The next code chunk uses `mutate` to code `lo2` (possible values: 10, 15, 20, 25), `hi1` (possible values: 75, 80, 85, 90), and `hi2` (static value: 95). The conditional coding depends on varibles (`min`, `max`) that summarise the distribution of `cum_per` within each agestrat. Thus, R doesn't need to access the distributions in the original age-stratified frequency table to determine the correct values for `lo2` and `hi1`.
+```{r lo_hi_SD, echo=22:40, eval=FALSE}
 ```
-The line of code below cleans up the current object `ANT_tot_age_lo1lo2_hi1hi2` for use in the next procedure. `select` drops the named columns preceded by `-` (minus sign). Without the minus sign, `select` would have kept only the named columns.
-```{r lo_hi_SD, echo=41, eval=FALSE}
+The next snippet cleans up the current data object for use in the next procedure. `select` drops the named columns preceded by `-` (minus sign). Without the minus sign, `select` would have kept only the named columns. Finally, `assign` gives the data object a name and assigns it to the global environment for use by downstream code.
+```{r lo_hi_SD, echo=41:42, eval=FALSE}
 ```
+
+
+## START HERE
 
 <br>
 
