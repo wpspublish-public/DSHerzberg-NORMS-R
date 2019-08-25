@@ -264,7 +264,8 @@ write_csv(eval(as.name(paste0(score_name, '_desc_agestrat'))), here(
   )
 ))
 
-write_csv(eval(as.name(paste0(score_name, '_freq_agestrat'))), here(
+freq_csv <- eval(as.name(paste0(score_name, '_freq_agestrat'))) %>% select(-lag_tot, -lag_cum_per)
+write_csv(freq_csv, here(
   paste0(
     'OUTPUT-FILES/DESCRIPTIVE-TABLES/',
     score_name,
@@ -273,6 +274,7 @@ write_csv(eval(as.name(paste0(score_name, '_freq_agestrat'))), here(
     '.csv'
   )
 ))
+rm(freq_csv)
 ```
 
 ###### COMMENTED CODE CHUNKS
@@ -302,7 +304,9 @@ We use `tibble::tribble()` to generate a z-score lookup table, associating z-sco
 ```{r freq_desc, echo=19:32, eval=FALSE}
 ```
 The next snippet saves out two date-labeled tables, descriptive statistics by `agestrat` and frequency counts by `agestrat`, for the score being normed. These tables are written to .csv format using `readr::write_csv()`. The file path within `here::here()` is concatenated with `paste0()`, which joins static strings with the value contained in `score_name`, as well as with a dynamic current date value provided by `base::Sys.Date()`. The latter is wrapped in `base::format`, which takes `"%Y-%m-%d"` as its second argument, specifying that the date part of the file name will be written in ISO 8601 format.
-```{r freq_desc, echo=34:52, eval=FALSE}
+
+In the second block of code, we initialize an interim object `freq_csv` that allows us to drop two unneeded columns, using `select()` and the minus sign `-` to designate columns to remove. After the columns are dropped, the resulting table is written out, and then the interim object is removed from the global environment `base::rm()`.
+```{r freq_desc, echo=34:54, eval=FALSE}
 ```
 
 <br>
@@ -428,18 +432,18 @@ hist_prompt <- function() {
 hist_prompt()
 ```
 ###### COMMENTED CODE CHUNKS
-The function that enables this interactive session is designated `hist_prompt`. `writeLines` prints user instructions for model selection to the console as a numbered list, using the escape character \n to insert line breaks in the printed text.
+The function that enables this interactive session is designated `hist_prompt`. `writeLines` prints instructions to the console, using the escape character `\n` to insert line breaks in the printed text.
 ```{r hist, echo=1:2, eval=FALSE}
 ```
-The interactive session runs within the structure of a repeat loop `base::repeat{}`. In a repeat loop, the loop keeps iterating until R encounters a specific instruction to pass control outside the loop. Here, the default output of the iterating loop is the console prompt `Enter Y or N: `, which is printed as the `prompt` argument of `readline`, which pauses execution and awaits user input. That user input is coerced into a string `base::as.character`, and assigned to `show_hist` so it can be used to control logical flow in downstream code.
+The interactive session runs within the structure of a repeat loop `base::repeat{}`. In a repeat loop, the loop keeps iterating until R encounters an instruction to pass control outside the loop. Here, the default output of the iterating loop is the console prompt `Enter Y or N: `, which is printed as the `prompt` argument of `readline`, which pauses execution and awaits user input. That user input is coerced into a string `base::as.character`, and assigned to `show_hist` so it can be used to control logical flow in downstream code.
 
-The `base::if` statement controls what happens if the user entry signifies "Yes" (i.e., the value of `show_hist` is among `%in%` this set of character values: `c('Y', 'y', 'Yes', 'yes'). Under this condition, the code for generating the age-stratified histograms executes.
+The `base::if` statement controls what happens if the user entry signifies "Yes" (i.e., the value of `show_hist` is among `%in%` this set of character values: `c('Y', 'y', 'Yes', 'yes')`. Under this condition, the code for generating the age-stratified histograms executes.
 ```{r hist, echo=3:6, eval=FALSE}
 ```
-`ggplot` takes data frame `ANTraw_by_agestrat` as input, yielding histogram `geom_histogram` showing the distribution of variable `aes(ANT_total)`. Plot output is assigned to `hist_plot` so that plot will print when code is executed from source. `binwidth` controls width of histogram columns, `col` controls color of column outlines. Adjust the values of these arguments to change the appearance of the graph. 
+`ggplot` takes as input the raw data grouped by agestrat (named by `eval(as.name(paste0(score_name, '_raw_by_agestrat')))`), yielding histogram `geom_histogram`, which shows the distribution of the raw score being normed. Plot output is assigned to `hist_plot` so that the plot will print when the code is executed from source. `binwidth` controls the width of histogram columns, `col` controls the color of column outlines. You can adjust the values of these arguments to change the appearance of the graph. 
 ```{r hist, echo=7:11, eval=FALSE}
 ```
-`scale_y_continuous` applies new scale to y axis, using argument `breaks`. `seq` sets scale ranging from 0 to 20, in increments of 1. 
+`scale_y_continuous` applies a new scale to y axis, using argument `breaks`. `seq` sets scale ranging from 0 to 20, in increments of 1. 
 ```{r hist, echo=12, eval=FALSE}
 ```
 `labs` can be used to provide text labels for the graph, in this case titles and labels for the x- and y-axes.
@@ -452,13 +456,13 @@ The argument `fun` defines an anonymous function with four arguments `function(x
 `args` provides values for the four arguments (parameters) that are fed into `function(x, mean, sd, n)` and `dnorm`. These values are: the input data object, the `mean` of the score being normed, the `sd` of the score being normed, and the `n` of cases of the score being normed (with the latter being defined as the `length` of the column containing the score to be normed, which `base::length()` can process as a numerical vector).
 ```{r hist, echo=14:20, eval=FALSE}
 ```
-`theme` changes non-data elements of graphic, in this case by removing minor gridlines. `element_blank` means 'draw nothing'.
+`theme` changes non-data elements of the plot, in this case by removing minor gridlines. `element_blank` means 'draw nothing'.
 ```{r hist, echo=21, eval=FALSE}
 ```
-`facet_wrap` generates separate histogram for each `agestrat`. 
+`facet_wrap` generates a separate histogram for each `agestrat`. 
 ```{r hist, echo=22, eval=FALSE}
 ```
-Explicit `print` call ensures that plot will print when code is executed from source.
+Explicit `print` call ensures that the plot will print when the code is executed from source.
 ```{r hist, echo=23, eval=FALSE}
 ```
 

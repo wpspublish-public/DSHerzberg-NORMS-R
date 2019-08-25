@@ -472,7 +472,8 @@ write_csv(eval(as.name(paste0(score_name, '_desc_agestrat'))), here(
   )
 ))
 
-write_csv(eval(as.name(paste0(score_name, '_freq_agestrat'))), here(
+freq_csv &lt;- eval(as.name(paste0(score_name, '_freq_agestrat'))) %&gt;% select(-lag_tot, -lag_cum_per)
+write_csv(freq_csv, here(
   paste0(
     'OUTPUT-FILES/DESCRIPTIVE-TABLES/',
     score_name,
@@ -480,7 +481,8 @@ write_csv(eval(as.name(paste0(score_name, '_freq_agestrat'))), here(
     format(Sys.Date(), &quot;%Y-%m-%d&quot;),
     '.csv'
   )
-))</code></pre>
+))
+rm(freq_csv)</code></pre>
 </div>
 <div id="commented-code-chunks-1" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
@@ -524,6 +526,7 @@ perc_z &lt;- tribble(
   95,   1.6449
 )</code></pre>
 <p>The next snippet saves out two date-labeled tables, descriptive statistics by <code>agestrat</code> and frequency counts by <code>agestrat</code>, for the score being normed. These tables are written to .csv format using <code>readr::write_csv()</code>. The file path within <code>here::here()</code> is concatenated with <code>paste0()</code>, which joins static strings with the value contained in <code>score_name</code>, as well as with a dynamic current date value provided by <code>base::Sys.Date()</code>. The latter is wrapped in <code>base::format</code>, which takes <code>&quot;%Y-%m-%d&quot;</code> as its second argument, specifying that the date part of the file name will be written in ISO 8601 format.</p>
+<p>In the second block of code, we initialize an interim object <code>freq_csv</code> that allows us to drop two unneeded columns, using <code>select()</code> and the minus sign <code>-</code> to designate columns to remove. After the columns are dropped, the resulting table is written out, and then the interim object is removed from the global environment <code>base::rm()</code>.</p>
 <pre class="r"><code>write_csv(eval(as.name(paste0(score_name, '_desc_agestrat'))), here(
   paste0(
     'OUTPUT-FILES/DESCRIPTIVE-TABLES/',
@@ -534,7 +537,8 @@ perc_z &lt;- tribble(
   )
 ))
 
-write_csv(eval(as.name(paste0(score_name, '_freq_agestrat'))), here(
+freq_csv &lt;- eval(as.name(paste0(score_name, '_freq_agestrat'))) %&gt;% select(-lag_tot, -lag_cum_per)
+write_csv(freq_csv, here(
   paste0(
     'OUTPUT-FILES/DESCRIPTIVE-TABLES/',
     score_name,
@@ -542,7 +546,8 @@ write_csv(eval(as.name(paste0(score_name, '_freq_agestrat'))), here(
     format(Sys.Date(), &quot;%Y-%m-%d&quot;),
     '.csv'
   )
-))</code></pre>
+))
+rm(freq_csv)</code></pre>
 <p><br></p>
 </div>
 </div>
@@ -678,22 +683,22 @@ hist_prompt()</code></pre>
 </div>
 <div id="commented-code-chunks-4" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
-<p>The function that enables this interactive session is designated <code>hist_prompt</code>. <code>writeLines</code> prints user instructions for model selection to the console as a numbered list, using the escape character to insert line breaks in the printed text.</p>
+<p>The function that enables this interactive session is designated <code>hist_prompt</code>. <code>writeLines</code> prints instructions to the console, using the escape character <code>\n</code> to insert line breaks in the printed text.</p>
 <pre class="r"><code>hist_prompt &lt;- function() {
   writeLines(&quot;\nDo you want to examine histograms showing the distribution of the score to be normed, by agestrat?&quot;)</code></pre>
-<p>The interactive session runs within the structure of a repeat loop <code>base::repeat{}</code>. In a repeat loop, the loop keeps iterating until R encounters a specific instruction to pass control outside the loop. Here, the default output of the iterating loop is the console prompt <code>Enter Y or N:</code>, which is printed as the <code>prompt</code> argument of <code>readline</code>, which pauses execution and awaits user input. That user input is coerced into a string <code>base::as.character</code>, and assigned to <code>show_hist</code> so it can be used to control logical flow in downstream code.</p>
-<p>The <code>base::if</code> statement controls what happens if the user entry signifies “Yes” (i.e., the value of <code>show_hist</code> is among <code>%in%</code> this set of character values: `c(‘Y’, ‘y’, ‘Yes’, ‘yes’). Under this condition, the code for generating the age-stratified histograms executes.</p>
+<p>The interactive session runs within the structure of a repeat loop <code>base::repeat{}</code>. In a repeat loop, the loop keeps iterating until R encounters an instruction to pass control outside the loop. Here, the default output of the iterating loop is the console prompt <code>Enter Y or N:</code>, which is printed as the <code>prompt</code> argument of <code>readline</code>, which pauses execution and awaits user input. That user input is coerced into a string <code>base::as.character</code>, and assigned to <code>show_hist</code> so it can be used to control logical flow in downstream code.</p>
+<p>The <code>base::if</code> statement controls what happens if the user entry signifies “Yes” (i.e., the value of <code>show_hist</code> is among <code>%in%</code> this set of character values: <code>c('Y', 'y', 'Yes', 'yes')</code>. Under this condition, the code for generating the age-stratified histograms executes.</p>
 <pre class="r"><code>  repeat {
     show_hist &lt;-
       suppressWarnings(as.character(readline(prompt = &quot;Enter Y or N: &quot;)))
     if (show_hist %in% c('Y', 'y', 'Yes', 'yes')) {</code></pre>
-<p><code>ggplot</code> takes data frame <code>ANTraw_by_agestrat</code> as input, yielding histogram <code>geom_histogram</code> showing the distribution of variable <code>aes(ANT_total)</code>. Plot output is assigned to <code>hist_plot</code> so that plot will print when code is executed from source. <code>binwidth</code> controls width of histogram columns, <code>col</code> controls color of column outlines. Adjust the values of these arguments to change the appearance of the graph.</p>
+<p><code>ggplot</code> takes as input the raw data grouped by agestrat (named by <code>eval(as.name(paste0(score_name, '_raw_by_agestrat')))</code>), yielding histogram <code>geom_histogram</code>, which shows the distribution of the raw score being normed. Plot output is assigned to <code>hist_plot</code> so that the plot will print when the code is executed from source. <code>binwidth</code> controls the width of histogram columns, <code>col</code> controls the color of column outlines. You can adjust the values of these arguments to change the appearance of the graph.</p>
 <pre class="r"><code>      hist_plot &lt;- ggplot(data = eval(as.name(paste0(score_name, '_raw_by_agestrat'))), aes(eval(as.name(score_name)))) +
         geom_histogram(
           binwidth = .2,
           col = &quot;red&quot;
         ) +</code></pre>
-<p><code>scale_y_continuous</code> applies new scale to y axis, using argument <code>breaks</code>. <code>seq</code> sets scale ranging from 0 to 20, in increments of 1.</p>
+<p><code>scale_y_continuous</code> applies a new scale to y axis, using argument <code>breaks</code>. <code>seq</code> sets scale ranging from 0 to 20, in increments of 1.</p>
 <pre class="r"><code>        scale_y_continuous(breaks = seq(0, 20, 1)) +</code></pre>
 <p><code>labs</code> can be used to provide text labels for the graph, in this case titles and labels for the x- and y-axes.</p>
 <pre class="r"><code>        labs(title = &quot;Frequency Distribution&quot;, x = &quot;Each bin is a count of a specific Total Score value&quot;, y = &quot;Each histogram is an agestrat&quot;) +</code></pre>
@@ -707,9 +712,9 @@ hist_prompt()</code></pre>
           args = with(eval(as.name(paste0(score_name, '_raw_by_agestrat'))), c(mean = mean(eval(as.name(score_name))), sd = sd(eval(as.name(score_name))), n
                                                                                = length(eval(as.name(score_name)))))
         ) +</code></pre>
-<p><code>theme</code> changes non-data elements of graphic, in this case by removing minor gridlines. <code>element_blank</code> means ‘draw nothing’.</p>
+<p><code>theme</code> changes non-data elements of the plot, in this case by removing minor gridlines. <code>element_blank</code> means ‘draw nothing’.</p>
 <pre class="r"><code>        theme(panel.grid.minor=element_blank()) +</code></pre>
-<p><code>facet_wrap</code> generates separate histogram for each <code>agestrat</code>.</p>
+<p><code>facet_wrap</code> generates a separate histogram for each <code>agestrat</code>.</p>
 <pre class="r"><code>        facet_wrap(~agestrat)</code></pre>
 <p>Explicit <code>print</code> call ensures that plot will print when code is executed from source.</p>
 <pre class="r"><code>      print(hist_plot)</code></pre>

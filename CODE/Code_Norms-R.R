@@ -99,7 +99,8 @@ write_csv(eval(as.name(paste0(score_name, '_desc_agestrat'))), here(
   )
 ))
 
-write_csv(eval(as.name(paste0(score_name, '_freq_agestrat'))), here(
+freq_csv <- eval(as.name(paste0(score_name, '_freq_agestrat'))) %>% select(-lag_tot, -lag_cum_per)
+write_csv(freq_csv, here(
   paste0(
     'OUTPUT-FILES/DESCRIPTIVE-TABLES/',
     score_name,
@@ -108,6 +109,7 @@ write_csv(eval(as.name(paste0(score_name, '_freq_agestrat'))), here(
     '.csv'
   )
 ))
+rm(freq_csv)
 
 mean_plot <- ggplot(data = eval(as.name(paste0(score_name, '_desc_agestrat'))), aes(group, mean)) +
   geom_point(
@@ -177,6 +179,8 @@ hist_prompt <- function() {
 }
 hist_prompt()
 
+# START HERE
+################## NEW CODE HERE FOR MARKDOWN
 # Generate table of lo1, lo2, hi1, hi2 SD adjustment points by agestrat
 full_join(
   eval(as.name(paste0(score_name, '_freq_agestrat'))),
@@ -217,9 +221,40 @@ full_join(
                     max > 80 ~ 80,
                     TRUE ~ 75),
     hi2 = 95
-  ) %>% 
-  select(-min,-max) %>% 
-  assign(paste0(score_name, '_age_lo1lo2_hi1hi2'), ., envir = .GlobalEnv)
+  ) %>% select(-min,-max) %>% 
+  assign('lo1lo2_hi1hi2_interim', ., envir = .GlobalEnv)
+
+# Code below handles situation when lo1lo2_hi1hi2_interim is missing rows
+# because of highly skewed distributions within agestrats. Conditional code
+# identifies these sitations when nrow(lo1lo2_hi1hi2_interim) is less than
+# num_agestrat. Under that case, the code creates new rows so that all agestrats
+# are represented. It then fills in the missing values of lo1lo2_hi1hi2 using
+# the lag row.
+if (nrow(lo1lo2_hi1hi2_interim) != num_agestrat) {
+  agestrat %>% 
+    enframe() %>% 
+    select(
+      value
+    ) %>% 
+    rename(
+      agestrat = value
+    ) %>% 
+    full_join(
+      lo1lo2_hi1hi2_interim, 
+      by = 'agestrat'
+    ) %>% 
+    fill(
+      lo1,
+      lo2,
+      hi1,
+      hi2
+    ) %>% 
+    assign(paste0(score_name, '_age_lo1lo2_hi1hi2'), ., envir = .GlobalEnv)   
+} else {
+  lo1lo2_hi1hi2_interim %>% 
+    assign(paste0(score_name, '_age_lo1lo2_hi1hi2'), ., envir = .GlobalEnv) 
+}
+rm(lo1lo2_hi1hi2_interim)
 
 #$$$$$$$$$$$NOTE: norm_perc_prompt CODE BELOW NOT PROPIGATED TO MARKDOWN OR CASL-2 SCRIPTS
 norm_perc_prompt <- function() {
