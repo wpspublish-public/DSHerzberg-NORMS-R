@@ -549,9 +549,6 @@ The next snippet cleans up the current data object for use in the next procedure
 ```{r lo_hi_SD, echo=41:42, eval=FALSE}
 ```
 
-
-## START HERE
-
 <br>
 
 #### Generate imputed medians, lo and hi SDs by agestrat
