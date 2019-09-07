@@ -179,9 +179,6 @@ hist_prompt <- function() {
 }
 hist_prompt()
 
-# START HERE
-################## NEW CODE HERE FOR MARKDOWN
-# Generate table of lo1, lo2, hi1, hi2 SD adjustment points by agestrat
 full_join(
   eval(as.name(paste0(score_name, '_freq_agestrat'))),
   (
@@ -224,12 +221,6 @@ full_join(
   ) %>% select(-min,-max) %>% 
   assign('lo1lo2_hi1hi2_interim', ., envir = .GlobalEnv)
 
-# Code below handles situation when lo1lo2_hi1hi2_interim is missing rows
-# because of highly skewed distributions within agestrats. Conditional code
-# identifies these sitations when nrow(lo1lo2_hi1hi2_interim) is less than
-# num_agestrat. Under that case, the code creates new rows so that all agestrats
-# are represented. It then fills in the missing values of lo1lo2_hi1hi2 using
-# the lag row.
 if (nrow(lo1lo2_hi1hi2_interim) != num_agestrat) {
   agestrat %>% 
     enframe() %>% 
@@ -256,7 +247,6 @@ if (nrow(lo1lo2_hi1hi2_interim) != num_agestrat) {
 }
 rm(lo1lo2_hi1hi2_interim)
 
-#$$$$$$$$$$$NOTE: norm_perc_prompt CODE BELOW NOT PROPIGATED TO MARKDOWN OR CASL-2 SCRIPTS
 norm_perc_prompt <- function() {
   print(eval(as.name(paste0(score_name, '_age_lo1lo2_hi1hi2'))), 
         n = nrow(eval(as.name(paste0(score_name, '_age_lo1lo2_hi1hi2')))))
@@ -273,8 +263,9 @@ norm_perc_prompt <- function() {
   readline()
 }
 norm_perc_prompt ()
-#$$$$$$$$$$$
 
+
+# START HERE
 
 # Join hi-lo norm perc values to freq table, add imputed raw scores (IRS) for
 # the five distribution points (lo1, lo2, med, hi1, hi2), and flag the rows that

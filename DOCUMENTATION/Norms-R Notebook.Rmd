@@ -79,7 +79,7 @@ To use the code in this Notebook, install these packages and load them using `li
 * `reshape2`: Collapse columns to rows, vice versa
 * `moderndive`: User-friendly linear modeling, regression and correlation tools
 * `magrittr`: Pipe operators
-* `tidyverse`: Many essential packages for data wrangling, analysis (`tidyr`, `dplyr`, `purrr`, `ggplot2`, `readr`, etc.)
+* `tidyverse`: Many essential packages for data wrangling and analysis (`tidyr`, `dplyr`, `purrr`, `ggplot2`, `readr`, etc.)
 * `ggpmisc`: Add equations, fit statistics to line plots
 * `ggrepel`: more `ggplot2` extensions
 
@@ -521,9 +521,34 @@ full_join(
                     max > 80 ~ 80,
                     TRUE ~ 75),
     hi2 = 95
-  ) %>% 
-  select(-min,-max) %>% 
-  assign(paste0(score_name, '_age_lo1lo2_hi1hi2'), ., envir = .GlobalEnv)
+  ) %>% select(-min,-max) %>% 
+  assign('lo1lo2_hi1hi2_interim', ., envir = .GlobalEnv)
+
+if (nrow(lo1lo2_hi1hi2_interim) != num_agestrat) {
+  agestrat %>% 
+    enframe() %>% 
+    select(
+      value
+    ) %>% 
+    rename(
+      agestrat = value
+    ) %>% 
+    full_join(
+      lo1lo2_hi1hi2_interim, 
+      by = 'agestrat'
+    ) %>% 
+    fill(
+      lo1,
+      lo2,
+      hi1,
+      hi2
+    ) %>% 
+    assign(paste0(score_name, '_age_lo1lo2_hi1hi2'), ., envir = .GlobalEnv)   
+} else {
+  lo1lo2_hi1hi2_interim %>% 
+    assign(paste0(score_name, '_age_lo1lo2_hi1hi2'), ., envir = .GlobalEnv) 
+}
+rm(lo1lo2_hi1hi2_interim)
 ```
 
 ###### COMMENTED CODE CHUNKS
@@ -543,10 +568,61 @@ The object is piped through `dplyr::filter`, which keeps only the flagged rows. 
 ```{r lo_hi_SD, echo=17:21, eval=FALSE}
 ```
 The current data object is a table with one row for each `agestrat`. The next code chunk uses `mutate` to code `lo2` (possible values: 10, 15, 20, 25), `hi1` (possible values: 75, 80, 85, 90), and `hi2` (static value: 95). The conditional coding depends on varibles (`min`, `max`) that summarise the distribution of `cum_per` within each agestrat. Thus, R doesn't need to access the distributions in the original age-stratified frequency table to determine the correct values for `lo2` and `hi1`.
-```{r lo_hi_SD, echo=22:40, eval=FALSE}
+```{r lo_hi_SD, echo=22:39, eval=FALSE}
 ```
-The next snippet cleans up the current data object for use in the next procedure. `select` drops the named columns preceded by `-` (minus sign). Without the minus sign, `select` would have kept only the named columns. Finally, `assign` gives the data object a name and assigns it to the global environment for use by downstream code.
-```{r lo_hi_SD, echo=41:42, eval=FALSE}
+The next snippet cleans up the current data object for use in the next procedure. `select` drops the named columns preceded by `-` (minus sign). Without the minus sign, `select` would have kept only the named columns. Finally, `assign` gives the data object a name and assigns it to the global environment. The name has the suffix `_interim` because it will be immediately processed by the next snippet.
+```{r lo_hi_SD, echo=40:41, eval=FALSE}
+```
+Next comes conditional code (`if-else`) to handle situations where the interim table is missing `agestrat` rows because of highly skewed raw-score distributions within age groups. These tables are identified when the logical condition `nrow(lo1lo2_hi1hi2_interim) != num_agestrat` returns `TRUE`. That is, the number of rows of the interim table is NOT equal to the number of age groups, which indicates missing rows.
+```{r lo_hi_SD, echo=43, eval=FALSE}
+```
+To fix these problematic tables, we begin by converting the vector `agestrat` into a data frame with `tibble::enframe()`. The `agestrat` rows are contained in the column `value`, which we `select()` and `rename()` to yield a single-column data frame containing all values of `agestrat`.
+```{r lo_hi_SD, echo=44:51, eval=FALSE}
+```
+This column is then joined to the interim table `lo1lo2_hi1hi2_interim`, creating a table with new row(s) for the formerly missing age group(s). Those new rows are `NA` for `lo1`, `lo2`, `hi1`, and `hi2`. `tidyr::fill()` is then used to fill in the missing values for these columns, using values from the lag row. `assign` names the data object for downstream code.
+```{r lo_hi_SD, echo=52:62, eval=FALSE}
+```
+This next snippet specifies what happens in the `else` condition of the logic: when the interim object `lo1lo2_hi1hi2_interim` is NOT missing any `agestrat` rows. In this case, the interim object is simply assigned its downstream name without further processing.
+```{r lo_hi_SD, echo=63:67, eval=FALSE}
+```
+
+<br>
+
+#### Pause execution for user to examine normalization percentile points
+
+When the code is sourced, the following snippet pauses execution and prompts the user to examine the table of `lo1`, `lo2`, `hi1`, and `hi2` percentile points, by `agstrat`, that will be used to normalize the raw score distribution.
+
+###### VALID CODE TO RUN
+```{r norm_perc_prompt, eval=FALSE}
+norm_perc_prompt <- function() {
+  print(eval(as.name(paste0(score_name, '_age_lo1lo2_hi1hi2'))), 
+        n = nrow(eval(as.name(paste0(score_name, '_age_lo1lo2_hi1hi2')))))
+  writeLines(
+    c(
+      strrep("\u2500", 80),
+      "For each age group, R has selected four percentile points (lo1, lo2, hi1, hi2)",
+      "that will be used to normalize the raw score distribution.\n",
+      "Please review the table of percentile points above.",
+      "Then press [enter] to continue.",
+      strrep("\u2500", 80)
+    )
+  )
+  readline()
+}
+norm_perc_prompt ()
+```
+###### COMMENTED CODE CHUNKS
+`norm_perc_prompt()` is a function that takes no arguments and thus can be called with empty parentheses.
+```{r norm_perc_prompt, echo=1, eval=FALSE}
+```
+`print()` displays the table of normalization percentile points on the console. `n = nrow()` is an argument that forces printing of the entire table, instead of just the first 10 rows.
+```{r norm_perc_prompt, echo=2:3, eval=FALSE}
+```
+`writeLines()` takes a character vector and prints it to the console, where each vector element is printed on a new line. `strrep("\u2500", 80)` repeats a unicode horizontal box drawing character `u2400` 80 times, thus enclosing the printed text between horizontal lines.
+```{r norm_perc_prompt, echo=4:11, eval=FALSE}
+```
+`readline` pauses execution and waits for the user to press [enter], at which point execution resumes.
+```{r norm_perc_prompt, echo=14, eval=FALSE}
 ```
 
 <br>

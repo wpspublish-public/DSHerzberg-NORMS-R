@@ -271,7 +271,7 @@ min_raw &lt;- insert minimum raw score value here</code></pre>
 <li><code>reshape2</code>: Collapse columns to rows, vice versa</li>
 <li><code>moderndive</code>: User-friendly linear modeling, regression and correlation tools</li>
 <li><code>magrittr</code>: Pipe operators</li>
-<li><code>tidyverse</code>: Many essential packages for data wrangling, analysis (<code>tidyr</code>, <code>dplyr</code>, <code>purrr</code>, <code>ggplot2</code>, <code>readr</code>, etc.)</li>
+<li><code>tidyverse</code>: Many essential packages for data wrangling and analysis (<code>tidyr</code>, <code>dplyr</code>, <code>purrr</code>, <code>ggplot2</code>, <code>readr</code>, etc.)</li>
 <li><code>ggpmisc</code>: Add equations, fit statistics to line plots</li>
 <li><code>ggrepel</code>: more <code>ggplot2</code> extensions</li>
 </ul>
@@ -716,7 +716,7 @@ hist_prompt()</code></pre>
 <pre class="r"><code>        theme(panel.grid.minor=element_blank()) +</code></pre>
 <p><code>facet_wrap</code> generates a separate histogram for each <code>agestrat</code>.</p>
 <pre class="r"><code>        facet_wrap(~agestrat)</code></pre>
-<p>Explicit <code>print</code> call ensures that plot will print when code is executed from source.</p>
+<p>Explicit <code>print</code> call ensures that the plot will print when the code is executed from source.</p>
 <pre class="r"><code>      print(hist_plot)</code></pre>
 <p><br></p>
 </div>
@@ -769,9 +769,34 @@ hist_prompt()</code></pre>
                     max &gt; 80 ~ 80,
                     TRUE ~ 75),
     hi2 = 95
-  ) %&gt;% 
-  select(-min,-max) %&gt;% 
-  assign(paste0(score_name, '_age_lo1lo2_hi1hi2'), ., envir = .GlobalEnv)</code></pre>
+  ) %&gt;% select(-min,-max) %&gt;% 
+  assign('lo1lo2_hi1hi2_interim', ., envir = .GlobalEnv)
+
+if (nrow(lo1lo2_hi1hi2_interim) != num_agestrat) {
+  agestrat %&gt;% 
+    enframe() %&gt;% 
+    select(
+      value
+    ) %&gt;% 
+    rename(
+      agestrat = value
+    ) %&gt;% 
+    full_join(
+      lo1lo2_hi1hi2_interim, 
+      by = 'agestrat'
+    ) %&gt;% 
+    fill(
+      lo1,
+      lo2,
+      hi1,
+      hi2
+    ) %&gt;% 
+    assign(paste0(score_name, '_age_lo1lo2_hi1hi2'), ., envir = .GlobalEnv)   
+} else {
+  lo1lo2_hi1hi2_interim %&gt;% 
+    assign(paste0(score_name, '_age_lo1lo2_hi1hi2'), ., envir = .GlobalEnv) 
+}
+rm(lo1lo2_hi1hi2_interim)</code></pre>
 </div>
 <div id="commented-code-chunks-5" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
@@ -820,20 +845,89 @@ hist_prompt()</code></pre>
                     max &gt; 85 ~ 85,
                     max &gt; 80 ~ 80,
                     TRUE ~ 75),
-    hi2 = 95
-  ) %&gt;% </code></pre>
-<p>The next snippet cleans up the current data object for use in the next procedure. <code>select</code> drops the named columns preceded by <code>-</code> (minus sign). Without the minus sign, <code>select</code> would have kept only the named columns. Finally, <code>assign</code> gives the data object a name and assigns it to the global environment for use by downstream code.</p>
-<pre class="r"><code>  select(-min,-max) %&gt;% 
-  assign(paste0(score_name, '_age_lo1lo2_hi1hi2'), ., envir = .GlobalEnv)</code></pre>
-</div>
-</div>
-<div id="start-here" class="section level2">
-<h2>START HERE</h2>
+    hi2 = 95</code></pre>
+<p>The next snippet cleans up the current data object for use in the next procedure. <code>select</code> drops the named columns preceded by <code>-</code> (minus sign). Without the minus sign, <code>select</code> would have kept only the named columns. Finally, <code>assign</code> gives the data object a name and assigns it to the global environment. The name has the suffix <code>_interim</code> because it will be immediately processed by the next snippet.</p>
+<pre class="r"><code>  ) %&gt;% select(-min,-max) %&gt;% 
+  assign('lo1lo2_hi1hi2_interim', ., envir = .GlobalEnv)</code></pre>
+<p>Next comes conditional code (<code>if-else</code>) to handle situations where the interim table is missing <code>agestrat</code> rows because of highly skewed raw-score distributions within age groups. These tables are identified when the logical condition <code>nrow(lo1lo2_hi1hi2_interim) != num_agestrat</code> returns <code>TRUE</code>. That is, the number of rows of the interim table is NOT equal to the number of age groups, which indicates missing rows.</p>
+<pre class="r"><code>if (nrow(lo1lo2_hi1hi2_interim) != num_agestrat) {</code></pre>
+<p>To fix these problematic tables, we begin by converting the vector <code>agestrat</code> into a data frame with <code>tibble::enframe()</code>. The <code>agestrat</code> rows are contained in the column <code>value</code>, which we <code>select()</code> and <code>rename()</code> to yield a single-column data frame containing all values of <code>agestrat</code>.</p>
+<pre class="r"><code>  agestrat %&gt;% 
+    enframe() %&gt;% 
+    select(
+      value
+    ) %&gt;% 
+    rename(
+      agestrat = value
+    ) %&gt;% </code></pre>
+<p>This column is then joined to the interim table <code>lo1lo2_hi1hi2_interim</code>, creating a table with new row(s) for the formerly missing age group(s). Those new rows are <code>NA</code> for <code>lo1</code>, <code>lo2</code>, <code>hi1</code>, and <code>hi2</code>. <code>tidyr::fill()</code> is then used to fill in the missing values for these columns, using values from the lag row. <code>assign</code> names the data object for downstream code.</p>
+<pre class="r"><code>    full_join(
+      lo1lo2_hi1hi2_interim, 
+      by = 'agestrat'
+    ) %&gt;% 
+    fill(
+      lo1,
+      lo2,
+      hi1,
+      hi2
+    ) %&gt;% 
+    assign(paste0(score_name, '_age_lo1lo2_hi1hi2'), ., envir = .GlobalEnv)   </code></pre>
+<p>This next snippet specifies what happens in the <code>else</code> condition of the logic: when the interim object <code>lo1lo2_hi1hi2_interim</code> is NOT missing any <code>agestrat</code> rows. In this case, the interim object is simply assigned its downstream name without further processing.</p>
+<pre class="r"><code>} else {
+  lo1lo2_hi1hi2_interim %&gt;% 
+    assign(paste0(score_name, '_age_lo1lo2_hi1hi2'), ., envir = .GlobalEnv) 
+}
+rm(lo1lo2_hi1hi2_interim)</code></pre>
 <p><br></p>
+</div>
+</div>
+<div id="pause-execution-for-user-to-examine-normalization-percentile-points" class="section level4">
+<h4>Pause execution for user to examine normalization percentile points</h4>
+<p>When the code is sourced, the following snippet pauses execution and prompts the user to examine the table of <code>lo1</code>, <code>lo2</code>, <code>hi1</code>, and <code>hi2</code> percentile points, by <code>agstrat</code>, that will be used to normalize the raw score distribution.</p>
+<div id="valid-code-to-run-7" class="section level6">
+<h6>VALID CODE TO RUN</h6>
+<pre class="r"><code>norm_perc_prompt &lt;- function() {
+  print(eval(as.name(paste0(score_name, '_age_lo1lo2_hi1hi2'))), 
+        n = nrow(eval(as.name(paste0(score_name, '_age_lo1lo2_hi1hi2')))))
+  writeLines(
+    c(
+      strrep(&quot;\u2500&quot;, 80),
+      &quot;For each age group, R has selected four percentile points (lo1, lo2, hi1, hi2)&quot;,
+      &quot;that will be used to normalize the raw score distribution.\n&quot;,
+      &quot;Please review the table of percentile points above.&quot;,
+      &quot;Then press [enter] to continue.&quot;,
+      strrep(&quot;\u2500&quot;, 80)
+    )
+  )
+  readline()
+}
+norm_perc_prompt ()</code></pre>
+</div>
+<div id="commented-code-chunks-6" class="section level6">
+<h6>COMMENTED CODE CHUNKS</h6>
+<p><code>norm_perc_prompt()</code> is a function that takes no arguments and thus can be called with empty parentheses.</p>
+<pre class="r"><code>norm_perc_prompt &lt;- function() {</code></pre>
+<p><code>print()</code> displays the table of normalization percentile points on the console. <code>n = nrow()</code> is an argument that forces printing of the entire table, instead of just the first 10 rows.</p>
+<pre class="r"><code>  print(eval(as.name(paste0(score_name, '_age_lo1lo2_hi1hi2'))), 
+        n = nrow(eval(as.name(paste0(score_name, '_age_lo1lo2_hi1hi2')))))</code></pre>
+<p><code>writeLines()</code> takes a character vector and prints it to the console, where each vector element is printed on a new line. <code>strrep(&quot;\u2500&quot;, 80)</code> repeats a unicode horizontal box drawing character <code>u2400</code> 80 times, thus enclosing the printed text between horizontal lines.</p>
+<pre class="r"><code>  writeLines(
+    c(
+      strrep(&quot;\u2500&quot;, 80),
+      &quot;For each age group, R has selected four percentile points (lo1, lo2, hi1, hi2)&quot;,
+      &quot;that will be used to normalize the raw score distribution.\n&quot;,
+      &quot;Please review the table of percentile points above.&quot;,
+      &quot;Then press [enter] to continue.&quot;,
+      strrep(&quot;\u2500&quot;, 80)</code></pre>
+<p><code>readline</code> pauses execution and waits for the user to press [enter], at which point execution resumes.</p>
+<pre class="r"><code>  readline()</code></pre>
+<p><br></p>
+</div>
+</div>
 <div id="generate-imputed-medians-lo-and-hi-sds-by-agestrat" class="section level4">
 <h4>Generate imputed medians, lo and hi SDs by agestrat</h4>
 <p>The process of normalizing each age-group raw score distribution continues, by adding columns for the imputed median, and standard deviations above and below the median (lo_SD, hi_SD). Dividing the standard deviation into two components contributes to normalization by compensating for the skewness in the original raw score distributions.</p>
-<div id="valid-code-to-run-7" class="section level6">
+<div id="valid-code-to-run-8" class="section level6">
 <h6>VALID CODE TO RUN</h6>
 <pre class="r"><code>norm_build1 &lt;-
   ANT_tot_freq_agestrat %&gt;% left_join(ANT_tot_age_lo1lo2_hi1hi2, by = 'agestrat') %&gt;% mutate (
@@ -896,7 +990,7 @@ norm_build_med_hilo_sum &lt;-
     hi_SD = first(na.omit(hi_SD))
   ) %&gt;% mutate(ES = (median - lag(median))/((hi_SD+lag(hi_SD)+lo_SD+lag(lo_SD))/4), group = 1:27) %&gt;% select(group, everything())</code></pre>
 </div>
-<div id="commented-code-chunks-6" class="section level6">
+<div id="commented-code-chunks-7" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
 <p>Initializes an output table <code>norm_build1</code>. Input table is the age-stratified raw score frequency table <code>ANT_tot_freq_agestrat</code>. <code>left_join</code> matches the input table to the <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code> normalizing cumulative percentage points for each <code>agestrat</code>. <code>mutate</code> computes new variables.</p>
 <pre class="r"><code>norm_build1 &lt;-
@@ -981,7 +1075,7 @@ norm_build_med_hilo_sum &lt;-
 <p>To generate the smoothed median for each age group, you choose between a 1st, 2nd, or 3rd-order polynomial equation as the smoothing forumula. The code generates fitted plots for each of these models, showing the regression coefficients and R<sup>2</sup> for each, allowing you to choose the appropriate model. The 3rd-order polynomial usually provides the best fit. You can also inspect the plots for the 2nd- and 1st-order polynomials, to determine if a reasonably good fit can be achieved with a more parsimonius model.</p>
 <p>For the lo_SDs and hi SDs, the code produces plots of the 1st-order (straight line) model and the mean substitution (horizontal line) model. Again, you select the model by examining the plots and judging which model best fits the data.</p>
 <p>Model selection is done via an interactive session. The console lists the model choices and prompts you to examine the plots and make a selection, successively for median, lo_SD, and hi_SD. In order for this interactive feature to work, the entire script must be executed from source, using <code>command-shift-S</code>.</p>
-<div id="valid-code-to-run-8" class="section level6">
+<div id="valid-code-to-run-9" class="section level6">
 <h6>VALID CODE TO RUN</h6>
 <pre class="r"><code>rm(ANT_tot_age_lo1lo2_hi1hi2, ANTraw_by_agestrat, norm_build1)
 
@@ -1074,7 +1168,7 @@ model_prompt_median()</code></pre>
 </div>
 <div id="plot-imputed-medians-with-fitted-regression-lines" class="section level4">
 <h4>Plot imputed medians with fitted regression lines</h4>
-<div id="commented-code-chunks-7" class="section level6">
+<div id="commented-code-chunks-8" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
 <p>Clean up environment by dropping superfluous tables.</p>
 <pre class="r"><code>rm(ANT_tot_age_lo1lo2_hi1hi2, ANTraw_by_agestrat, norm_build1)</code></pre>
@@ -1119,7 +1213,7 @@ lo_hi &lt;- c('lo_SD', 'hi_SD')</code></pre>
 <div id="generate-smoothed-estimated-medians-for-three-linear-models" class="section level4">
 <h4>Generate smoothed (estimated) medians for three linear models</h4>
 <p>As noted in the previous section, the norming process continues with the choice of models to smooth out the inter-age group variability in the imputed medians. In the smoothing process, <code>group</code> is used to predict (estimate) the smoothed values for the imputed medians. The regression coefficients from the selected linear model are used to generate the smoothed values for each age group. <code>group</code> is used as a linear, equal-interval proxy for the ordinal sequence of <code>agestrat</code> labels. Somewhat counterintuitively, the imputed values of median are <em>not</em> used to estimate the smoothed values of those same variables. Using <code>group</code> as the independent variable in the linear models provides the desired smoothed values.</p>
-<div id="commented-code-chunks-8" class="section level6">
+<div id="commented-code-chunks-9" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
 <p>The script contains three named functions (<code>model_median_1st</code>, <code>model_median_2nd</code>, <code>model_median_3rd</code>) that return vectors holding estimated (smoothed) medians for the 1st-, 2nd-, and 3rd-order polynomial formulas. Because the three functions are analogous, only the 3rd-order function is documented in detail.</p>
 <p><code>model_median_3rd</code> is a function whose body contains two operations. The first operation is the estimation of the linear model using <code>lm</code>. The first argument of <code>lm</code> specifies the terms of the 3rd-order polynomial formula, in which <code>group</code> is used to predict <code>median</code>. The second argument of <code>lm</code>, <code>data =</code>, specifies that the input values for model estimation are taken from the summary table <code>norm_build_med_hilo_sum</code> created by upstream code. The output of <code>lm</code> is piped into <code>assign</code>, whose first argument specifies a named object <code>model_median</code> to hold the model ouput. The second argument of <code>assign</code>, <code>.</code>, specifies that the piped input will be assigned to <code>model_median</code>, and the third argument <code>envir = .GlobalEnv</code> specifies that <code>model_median</code> will be available in the global environment, where it can be processed in downstream functions.</p>
@@ -1136,7 +1230,7 @@ lo_hi &lt;- c('lo_SD', 'hi_SD')</code></pre>
 <p>Previous code plotted imputed medians vs. agestrats, and fit 1st-, 2nd-, and 3rd-order polynomial regression lines to the imputed medians. This code also created functions that generate the estimated (smoothed) medians associated with each of these models.</p>
 <p>When sourced, the script generates the plots and prompts you to examine the plots and enter a choice for smoothing model at the console. The next set of snippets encodes a function that lists the model choices on the console and prompts you to select a model by entering its number. The smoothed medians associated with the selected model are thereby incorporated in all downstream code.</p>
 <p>This interactive session can only be executed from source by entering <code>command-shift-S</code>. The code cannot be run as an isolated block using <code>command-enter</code>; this mode of execution won’t pause and wait for user input.</p>
-<div id="commented-code-chunks-9" class="section level6">
+<div id="commented-code-chunks-10" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
 <p>The function that enables this interactive session is designated <code>model_prompt_median</code>. <code>writeLines</code> prints user instructions for model selection to the console as a numbered list, using the escape character <code>\n</code> to insert line breaks in the printed text.</p>
 <pre class="r"><code>model_prompt_median &lt;- function() {
@@ -1176,7 +1270,7 @@ lo_hi &lt;- c('lo_SD', 'hi_SD')</code></pre>
 <h4>Estimate smoothed lo_SDs, hi_SDs</h4>
 <p>The code for estimating smoothed values for the lo_SDs and hi_SDs is analogous to that detailed above for the smoothed medians. The operations flow from plotting the imputed values with lines for 1st-order polynomial and mean-subsitution smoothing models, to initializing functions that will smooth the SDs based on these two models, to using an interactive session to select the smoothing models for the SDs. This process is completed first for the lo_SDs, and then for the hi_SDs. This section of code concludes by generating the summary table that is used in downstream norming processes, and removing unneeded objects from the global environment.</p>
 <p>The code is only documented in detail where it differs from previous code.</p>
-<div id="valid-code-to-run-9" class="section level6">
+<div id="valid-code-to-run-10" class="section level6">
 <h6>VALID CODE TO RUN</h6>
 <pre class="r"><code>lo_SD_1st_plot &lt;-
   ggplot(norm_build_med_hilo_sum, aes(x = group, y = lo_SD)) +
@@ -1354,7 +1448,7 @@ smooth_med_SD &lt;-
 
 rm(list = ls()[!ls() %in% c(&quot;smooth_med_SD&quot;, &quot;model_median&quot;, &quot;model_lo_SD&quot;, &quot;model_hi_SD&quot;)])</code></pre>
 </div>
-<div id="commented-code-chunks-10" class="section level6">
+<div id="commented-code-chunks-11" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
 <p>The mean-subsitution model smooths the SDs by substituting their mean for every imputed value. The lo_SD mean is generated by the following code (taking the mean of the column of imputed lo_SD values, specified by <code>norm_build_med_hilo_sum$lo_SD</code>). The value is assigned to <code>mean_lo_SD</code>, a numerical vector of length 1.</p>
 <pre class="r"><code>mean_lo_SD &lt;- round(mean(norm_build_med_hilo_sum$lo_SD), 2)</code></pre>
@@ -1372,7 +1466,6 @@ rm(list = ls()[!ls() %in% c(&quot;smooth_med_SD&quot;, &quot;model_median&quot;,
   mutate(ES_sm = round((median_sm - lag(median_sm)) / ((
     lo_SD_sm + lag(lo_SD_sm) + hi_SD_sm + lag(hi_SD_sm)
   ) / 4), 3))</code></pre>
-</div>
 </div>
 </div>
 
