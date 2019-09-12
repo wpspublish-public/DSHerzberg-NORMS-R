@@ -264,15 +264,6 @@ norm_perc_prompt <- function() {
 }
 norm_perc_prompt ()
 
-
-# START HERE
-
-# Join hi-lo norm perc values to freq table, add imputed raw scores (IRS) for
-# the five distribution points (lo1, lo2, med, hi1, hi2), and flag the rows that
-# contain the correct IRS values for each distribution point (note how ties are
-# handled <= cum_per). Drop all rows containing missing values, such that
-# remaining rows are only those that contain the five IRS for each agestrat.
-
 norm_build1 <-
   eval(as.name(paste0(score_name, '_freq_agestrat'))) %>% 
   left_join(eval(as.name(paste0(score_name, '_age_lo1lo2_hi1hi2'))), by = 'agestrat') %>% 
@@ -299,15 +290,6 @@ norm_build1 <-
       TRUE ~ NA_character_
     )
   ) %>% drop_na() 
-
-# Next code deals with situation where upper age ranges are ceilinged out, or
-# lower age ranges are floored out, on the score being normed, such that the
-# code to this points doesn't generate lo1, lo2, hi1 and/or hi2 dist_points or
-# IRS for those lower/upper ranges. Next section imputes new rows for lo1, lo2,
-# med, hi1, hi2 (in agestrats where they are missing), and copies in nearest
-# values for the remaining columns. Two separate calls of tidyr::fill(), are
-# required, one to fill down the table for missing hi values, and one to fill up
-# the table for missing lo values.3
 
 df_interim <- norm_build1 %>% ungroup() %>% 
   mutate(
@@ -340,6 +322,9 @@ df_interim <- norm_build1 %>% ungroup() %>%
     )
   ) %>% group_by(agestrat)
 rm(norm_build1)
+
+
+#####################START HERE
 
 # Now collapse IRS values into a single row, with the correct IRS paired with
 # its dist_point label. Use left_join to look up Z-scores for distribution
@@ -384,7 +369,10 @@ norm_build_med_hilo_sum <-
     median = first(na.omit(median)),
     lo_SD = first(na.omit(lo_SD)),
     hi_SD = first(na.omit(hi_SD))
-  ) %>% mutate(ES = (median - lag(median))/((hi_SD+lag(hi_SD)+lo_SD+lag(lo_SD))/4), group = 1:num_agestrat) %>% select(group, everything())
+  ) %>% mutate(ES = (median - lag(median)) / ((hi_SD + lag(hi_SD) + lo_SD +
+                                                 lag(lo_SD)) / 4),
+               group = 1:num_agestrat) %>%
+  select(group, everything())
 
 # PROMPT TO EXAMINE PLOT OF IMPUTED MEDIANS VS. RAW SCORE MEANS.
 # NOTE: CODE BELOW NOT PROPIGATED TO MARKDOWN OR CASL-2 SCRIPTS

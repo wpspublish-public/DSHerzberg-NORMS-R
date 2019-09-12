@@ -926,20 +926,22 @@ norm_perc_prompt ()</code></pre>
 </div>
 <div id="generate-imputed-medians-lo-and-hi-sds-by-agestrat" class="section level4">
 <h4>Generate imputed medians, lo and hi SDs by agestrat</h4>
-<p>The process of normalizing each age-group raw score distribution continues, by adding columns for the imputed median, and standard deviations above and below the median (lo_SD, hi_SD). Dividing the standard deviation into two components contributes to normalization by compensating for the skewness in the original raw score distributions.</p>
+<p>The process of normalizing each raw score distribution, by age group, continues. We add columns for the imputed median, and standard deviations above and below the median (lo_SD, hi_SD). Dividing the standard deviation into two components contributes to normalization by compensating for the skewness in the original raw score distributions.</p>
 <div id="valid-code-to-run-8" class="section level6">
 <h6>VALID CODE TO RUN</h6>
 <pre class="r"><code>norm_build1 &lt;-
-  ANT_tot_freq_agestrat %&gt;% left_join(ANT_tot_age_lo1lo2_hi1hi2, by = 'agestrat') %&gt;% mutate (
-    IRS_lo1 = ((lo1 - lag_cum_per) / perc) * (ANT_total - lag_raw) + lag_raw,
+  eval(as.name(paste0(score_name, '_freq_agestrat'))) %&gt;% 
+  left_join(eval(as.name(paste0(score_name, '_age_lo1lo2_hi1hi2'))), by = 'agestrat') %&gt;% 
+  mutate (
+    IRS_lo1 = ((lo1 - lag_cum_per) / perc) * (eval(as.name(score_name)) - lag_raw) + lag_raw,
     IRS_lo2 = ((lo2 - lag_cum_per) /
-                 perc) * (ANT_total - lag_raw) + lag_raw,
+                 perc) * (eval(as.name(score_name)) - lag_raw) + lag_raw,
     IRS_med = ((50 - lag_cum_per) /
-                 perc) * (ANT_total - lag_raw) + lag_raw,
+                 perc) * (eval(as.name(score_name)) - lag_raw) + lag_raw,
     IRS_hi1 = ((hi1 - lag_cum_per) /
-                 perc) * (ANT_total - lag_raw) + lag_raw,
+                 perc) * (eval(as.name(score_name)) - lag_raw) + lag_raw,
     IRS_hi2 = ((hi2 - lag_cum_per) /
-                 perc) * (ANT_total - lag_raw) + lag_raw,
+                 perc) * (eval(as.name(score_name)) - lag_raw) + lag_raw,
     dist_point = case_when(
       lo1 &lt;= cum_per &amp; lo1 &gt; lag_cum_per ~ 'lo1',
       lo2 &lt;= cum_per &amp;
@@ -952,33 +954,69 @@ norm_perc_prompt ()</code></pre>
         hi2 &gt; lag_cum_per ~ 'hi2',
       TRUE ~ NA_character_
     )
-  ) %&gt;% drop_na() %&gt;% mutate(IRS = case_when(dist_point == 'lo1' ~ IRS_lo1,
-                                                             dist_point == 'lo2' ~ IRS_lo2,
-                                                             dist_point == 'med' ~ IRS_med,
-                                                             dist_point == 'hi1' ~ IRS_hi1,
-                                                             dist_point == 'hi2' ~ IRS_hi2,
-                                                             TRUE ~ NA_real_),
-                                             RSD = case_when(dist_point == 'lo1' ~ lead(lead(IRS))-IRS,
-                                                             dist_point == 'lo2' ~ lead(IRS)-IRS,
-                                                             dist_point == 'med' ~ IRS,
-                                                             dist_point == 'hi1' ~ IRS-lag(IRS),
-                                                             dist_point == 'hi2' ~ IRS-lag(lag(IRS)),
-                                                             TRUE ~ NA_real_),
-                                             lohi_value = case_when(dist_point == 'lo1' ~ lo1,
-                                                             dist_point == 'lo2' ~ lo2,
-                                                             dist_point == 'hi1' ~ hi1,
-                                                             dist_point == 'hi2' ~ hi2,
-                                                             TRUE ~ 50)) %&gt;% 
+  ) %&gt;% drop_na() 
+
+df_interim &lt;- norm_build1 %&gt;% ungroup() %&gt;% 
+  mutate(
+    dist_point = case_when(
+      dist_point == 'lo1' ~ 'A',
+      dist_point == 'lo2' ~ 'B',
+      dist_point == 'med' ~ 'C',
+      dist_point == 'hi1' ~ 'D',
+      dist_point == 'hi2' ~ 'E',
+      TRUE ~ NA_character_
+    )
+  ) %&gt;% complete(
+    agestrat, dist_point
+  ) %&gt;%
+  fill(
+    !!as.name(score_name):IRS_hi2
+  ) %&gt;% 
+  fill(
+    !!as.name(score_name):IRS_hi2,
+    .direction = &quot;up&quot;
+  ) %&gt;% 
+  mutate(
+    dist_point = case_when(
+      dist_point == 'A' ~ 'lo1',
+      dist_point == 'B' ~ 'lo2',
+      dist_point == 'C' ~ 'med',
+      dist_point == 'D' ~ 'hi1',
+      dist_point == 'E' ~ 'hi2',
+      TRUE ~ NA_character_
+    )
+  ) %&gt;% group_by(agestrat)
+rm(norm_build1)
+
+norm_build1 &lt;- df_interim %&gt;% mutate(
+  IRS = case_when(dist_point == 'lo1' ~ IRS_lo1,
+                  dist_point == 'lo2' ~ IRS_lo2,
+                  dist_point == 'med' ~ IRS_med,
+                  dist_point == 'hi1' ~ IRS_hi1,
+                  dist_point == 'hi2' ~ IRS_hi2,
+                  TRUE ~ NA_real_),
+  RSD = case_when(dist_point == 'lo1' ~ lead(lead(IRS))-IRS,
+                  dist_point == 'lo2' ~ lead(IRS)-IRS,
+                  dist_point == 'med' ~ IRS,
+                  dist_point == 'hi1' ~ IRS-lag(IRS),
+                  dist_point == 'hi2' ~ IRS-lag(lag(IRS)),
+                  TRUE ~ NA_real_),
+  lohi_value = case_when(dist_point == 'lo1' ~ lo1,
+                         dist_point == 'lo2' ~ lo2,
+                         dist_point == 'hi1' ~ hi1,
+                         dist_point == 'hi2' ~ hi2,
+                         TRUE ~ 50)) %&gt;% 
   select(agestrat, lo1, lo2, hi1, hi2, dist_point, lohi_value, IRS, RSD) %&gt;% left_join(perc_z, by = 'lohi_value') %&gt;% 
   mutate(std_RSD = RSD/z_score, SD = case_when(dist_point == 'lo1' | dist_point == 'hi1' ~ (std_RSD+lead(std_RSD))/2,
-                                                                                            TRUE ~ NA_real_),
+                                               TRUE ~ NA_real_),
          median = case_when(dist_point == 'med' ~ IRS,
                             TRUE ~ NA_real_),
          lo_SD = case_when(dist_point == 'lo1' ~ SD,
                            TRUE ~ NA_real_),
          hi_SD = case_when(dist_point == 'hi1' ~ SD,
                            TRUE ~ NA_real_))
-    
+rm(df_interim)
+
 norm_build_med_hilo_sum &lt;-
   norm_build1 %&gt;% summarise(
     lo1 = first(lo1),
@@ -988,25 +1026,30 @@ norm_build_med_hilo_sum &lt;-
     median = first(na.omit(median)),
     lo_SD = first(na.omit(lo_SD)),
     hi_SD = first(na.omit(hi_SD))
-  ) %&gt;% mutate(ES = (median - lag(median))/((hi_SD+lag(hi_SD)+lo_SD+lag(lo_SD))/4), group = 1:27) %&gt;% select(group, everything())</code></pre>
+  ) %&gt;% mutate(ES = (median - lag(median)) / ((hi_SD + lag(hi_SD) + lo_SD +
+                                                 lag(lo_SD)) / 4),
+               group = 1:num_agestrat) %&gt;%
+  select(group, everything())</code></pre>
 </div>
 <div id="commented-code-chunks-7" class="section level6">
 <h6>COMMENTED CODE CHUNKS</h6>
-<p>Initializes an output table <code>norm_build1</code>. Input table is the age-stratified raw score frequency table <code>ANT_tot_freq_agestrat</code>. <code>left_join</code> matches the input table to the <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code> normalizing cumulative percentage points for each <code>agestrat</code>. <code>mutate</code> computes new variables.</p>
+<p>The code initializes an output table <code>norm_build1</code>. The first input table is the age-stratified raw score frequency table <code>eval(as.name(paste0(score_name, '_freq_agestrat')))</code>. <code>dplyr::left_join()</code> matches this input table to the <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code> normalizing cumulative percentage points for each <code>agestrat</code>, which are contained in a second input table <code>eval(as.name(paste0(score_name, '_age_lo1lo2_hi1hi2')))</code>.</p>
 <pre class="r"><code>norm_build1 &lt;-
-  ANT_tot_freq_agestrat %&gt;% left_join(ANT_tot_age_lo1lo2_hi1hi2, by = 'agestrat') %&gt;% mutate (</code></pre>
-<p>The first set of new variables created by <code>mutuate</code> are the imputed raw scores <code>IRS_</code> for the median <code>med</code>, <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code>. The <code>IRS_</code> formula includes the raw score <code>ANT_total</code> associated with <code>lo1</code>, <code>lo2</code>, <code>hi1</code> or <code>hi2</code>, along with the percentage of cases <code>perc</code> in that same row. The formula also incorporates the raw score <code>lag_raw</code> and cumulative percentage <code>lag_cum_tot</code> from the <em>trailing</em> row. <code>mutate</code> calculates these values for every row, by <code>agestrat</code> even though eventually only the value in the row of <code>lo1</code> (for example) will flow through to the next set of calculations.</p>
-<pre class="r"><code>    IRS_lo1 = ((lo1 - lag_cum_per) / perc) * (ANT_total - lag_raw) + lag_raw,
+  eval(as.name(paste0(score_name, '_freq_agestrat'))) %&gt;% 
+  left_join(eval(as.name(paste0(score_name, '_age_lo1lo2_hi1hi2'))), by = 'agestrat') %&gt;% </code></pre>
+<p>The first set of new variables created by <code>dplyr::mutate()</code> are the imputed raw scores <code>IRS_</code> for the median <code>med</code>, <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code>. The <code>IRS_</code> formula includes the raw score <code>eval(as.name(score_name)</code> associated with <code>lo1</code>, <code>lo2</code>, <code>hi1</code> or <code>hi2</code>, along with the percentage of cases <code>perc</code> in that same row. The formula also incorporates the raw score <code>lag_raw</code> and cumulative percentage <code>lag_cum_tot</code> from the <em>trailing</em> row. <code>mutate()</code> calculates these values for every row, by <code>agestrat</code> even though eventually only the value in the row of <code>lo1</code> (for example) will flow through to the next set of calculations.</p>
+<pre class="r"><code>  mutate (
+    IRS_lo1 = ((lo1 - lag_cum_per) / perc) * (eval(as.name(score_name)) - lag_raw) + lag_raw,
     IRS_lo2 = ((lo2 - lag_cum_per) /
-                 perc) * (ANT_total - lag_raw) + lag_raw,
+                 perc) * (eval(as.name(score_name)) - lag_raw) + lag_raw,
     IRS_med = ((50 - lag_cum_per) /
-                 perc) * (ANT_total - lag_raw) + lag_raw,
+                 perc) * (eval(as.name(score_name)) - lag_raw) + lag_raw,
     IRS_hi1 = ((hi1 - lag_cum_per) /
-                 perc) * (ANT_total - lag_raw) + lag_raw,
+                 perc) * (eval(as.name(score_name)) - lag_raw) + lag_raw,
     IRS_hi2 = ((hi2 - lag_cum_per) /
-                 perc) * (ANT_total - lag_raw) + lag_raw,</code></pre>
-<p>Next <code>mutate</code> creates <code>dist_point</code> column. This column locates the rows in the table containing values of <code>cum_per</code> corresponding to the chosen values for <code>med</code>, <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code>, and applies a label to flag these rows. In the flagged rows, the <code>lo1</code> label (for example) identifies the row where the value of <code>lo1</code> is less than or equal to the value of <code>cum_per</code> in that row, and greater than the value of <code>cum_per</code> in the trailing row. <code>case_when</code> is used to specify the logical conditions that identify the rows where the labels in <code>dist_point</code> are to be applied. The reason for flagging specific rows in this context is that we want to extract specific cells from columns (e.g., the <code>IRS_</code> columns) where a value is calculated for every row. We want to filter and pass only the rows corresponding to the <code>dist_point</code> labels to later operations.</p>
-<p>Note the use of <code>TRUE ~ NA_character_</code> as the final argument of <code>case_when</code>. <code>TRUE</code> specifies the <em>ELSE</em> condition in the <code>case_when</code> logic. When using <code>case_when</code> for conditional transformations, all RHS must evaluate to the same type of vector. In this instance, we want <code>TRUE</code> to evaluate to missing (<code>NA</code>), but this is a logical type, whereas the other RHS in this <code>case_when</code> are all character. <code>NA_character_</code> supports missing values in a character vector.</p>
+                 perc) * (eval(as.name(score_name)) - lag_raw) + lag_raw,</code></pre>
+<p>Next <code>mutate()</code> creates the <code>dist_point</code> column. This column locates the rows in the table containing values of <code>cum_per</code> corresponding to the chosen values for <code>med</code>, <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code>, and applies a label to flag these rows. In the flagged rows, the <code>lo1</code> label (for example) identifies the row where the value of <code>lo1</code> is less than or equal to the value of <code>cum_per</code> in that row, and greater than the value of <code>cum_per</code> in the trailing row. <code>case_when</code> is used to specify the logical conditions that identify the rows where the labels in <code>dist_point</code> are to be applied. The reason for flagging specific rows in this context is that we want to extract specific cells from columns (e.g., the <code>IRS_</code> columns) where a value is calculated for every row. We want to filter and pass only the rows corresponding to the <code>dist_point</code> labels to later operations.</p>
+<p>Note the use of <code>TRUE ~ NA_character_</code> as the final argument of <code>case_when()</code>. <code>TRUE</code> specifies the <em>ELSE</em> condition in the <code>case_when()</code> logic. When using <code>case_when</code> for conditional transformations, all RHS must evaluate to the same type of vector. In this instance, we want <code>TRUE</code> to evaluate to missing (<code>NA</code>), but this is a logical type, whereas the other RHS in this <code>case_when()</code> are all character. <code>NA_character_</code> provides missing values to a character vector.</p>
 <pre class="r"><code>    dist_point = case_when(
       lo1 &lt;= cum_per &amp; lo1 &gt; lag_cum_per ~ 'lo1',
       lo2 &lt;= cum_per &amp;
@@ -1019,53 +1062,91 @@ norm_build_med_hilo_sum &lt;-
         hi2 &gt; lag_cum_per ~ 'hi2',
       TRUE ~ NA_character_
     )</code></pre>
-<p>Now the filtering operation: <code>drop_na()</code> drops any row that has <code>NA</code> in any column. In this instance, it drops all non-flagged rows in <code>dist_point</code>, resulting in a pared down table that includes, for each <code>agestrat</code>, only the five rows labeled <code>med</code>, <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code>.</p>
+<p>Now the filtering operation: <code>tidyr::drop_na()</code> drops any row that has <code>NA</code> in any column. In this instance, it drops all non-flagged rows in <code>dist_point</code>, resulting in a pared down table that includes, for each <code>agestrat</code>, only the five rows labeled <code>med</code>, <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code>.</p>
+<pre class="r"><code>  ) %&gt;% drop_na() </code></pre>
+<p>The next snippet deals with normative samples where the score being normed shows a strong floor effect in the youngest age ranges, and/or a strong ceiling effect the oldest age ranges. In these situations, the preceeding code may not generate rows corresponding to the <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and/or <code>hi2</code> distribution points. Downstream code requires the <code>norm_build1</code> object to have five rows (including <code>med</code>) per agestrat.</p>
+<p>To handle these cases, the code first initializes an interim object <code>df_interim</code> and removes the <code>agestrat</code> grouping with <code>dplyr::ungroup()</code>. <code>mutate()</code> and <code>case_when</code> are then used to recode <code>dist_point</code>, replacing existing values with an alphabetical sequence that can be manipuluated downstream.</p>
+<pre class="r"><code>df_interim &lt;- norm_build1 %&gt;% ungroup() %&gt;% 
+  mutate(
+    dist_point = case_when(
+      dist_point == 'lo1' ~ 'A',
+      dist_point == 'lo2' ~ 'B',
+      dist_point == 'med' ~ 'C',
+      dist_point == 'hi1' ~ 'D',
+      dist_point == 'hi2' ~ 'E',
+      TRUE ~ NA_character_
+    )</code></pre>
+<p><code>tidyr::complete()</code> is used to create new rows for levels of <code>agestrat</code> that have fewer than five rows in the interim data object. This is why <code>dist_point</code> was recoded previously; <code>complete()</code> needs to operate on a sequence of values (e.g., <code>A:E</code>) in order to recognize which values are missing from the sequence and create new rows corresponding to those missing values. <code>complete()</code> returns a table with five rows <code>A:E</code> per agestrat, generating new rows where needed. All new rows are <code>NA</code> for any columns not provided as arguments to <code>complete()</code>.</p>
+<pre class="r"><code>  ) %&gt;% complete(
+    agestrat, dist_point
+  ) %&gt;%</code></pre>
+<p>The next step is to use <code>tidyr::fill()</code> to replace the <code>NA</code> in the new rows with values from lagging or trailing rows. The sequence <code>!!as.name(score_name):IRS_hi2</code> is passed to <code>fill()</code> to identify the columns to be filled in. (Note the use of the <code>!!</code> operator to unquote the variable name so that it can be evaluated as a name within a function). <code>fill()</code> can operate in either direction: the default is <code>&quot;down&quot;</code>, in which <code>fill()</code> works down the table, replacing <code>NA</code> in the target columns with values from the lagging row. To go up, we must use an explicit <code>.direction = &quot;up&quot;</code> argument, which causes <code>fill()</code> to work up the table, filling in values from the leading row.</p>
+<p>The end result a table in which the <code>NA</code> values for the imputed scores <code>IRS_lo1</code>, <code>IRS_lo2</code>, <code>IRS_med</code>, <code>IRS_hi1</code>, and <code>IRS_hi2</code> are replaced with values from adjacent rows, which is the only mechanism we have to “estimate” these missing values.</p>
+<pre class="r"><code>  fill(
+    !!as.name(score_name):IRS_hi2
+  ) %&gt;% 
+  fill(
+    !!as.name(score_name):IRS_hi2,
+    .direction = &quot;up&quot;
+  ) %&gt;% </code></pre>
+<p>The remaining lines of this snippet clean up the interim object for downstream processing. <code>dist_point</code> is recoded to restore meaningful labels for its levels. Grouping by <code>agestrat</code> is reapplied, and the now irrelavent object <code>norm_build1</code> is removed from the environment.</p>
+<pre class="r"><code>  mutate(
+    dist_point = case_when(
+      dist_point == 'A' ~ 'lo1',
+      dist_point == 'B' ~ 'lo2',
+      dist_point == 'C' ~ 'med',
+      dist_point == 'D' ~ 'hi1',
+      dist_point == 'E' ~ 'hi2',
+      TRUE ~ NA_character_
+    )
+  ) %&gt;% group_by(agestrat)
+rm(norm_build1)</code></pre>
 <p><code>mutate</code> creates new columns to be conditionally coded by <code>case_when</code>. <code>IRS</code> collapses the five <code>IRS_</code> columns into a single imputed raw score column, by plucking, for each row, the value in the <code>IRS_</code> column corresponding to that row’s <code>dist_point</code>. For example, <code>case_when</code> sets the value of <code>IRS</code> to <code>IRS_lo1</code> when <code>dist_point</code> equals <code>lo1</code>, thus ignoring the other four <code>IRS_</code> columns.</p>
 <p><code>RSD</code> calculates the difference between the imputed raw score for the <code>lo</code> and <code>hi</code> distribution points, and the imputed raw score for the <code>med</code> distibution point. It does this by operating on the <code>IRS</code> column, using <code>lag</code> and <code>lead</code> operators to perform arithmetic on values from trailing and leading rows, and nesting these operators when the target value is two rows away from the current row.</p>
 <p><code>lohi_value</code> associates a numerical percentile value with each <code>dist_point</code> label, by collapsing the <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code> columns into a single column, plucking the target values in a similar manner to the <code>IRS</code> calculation described above. In this instance, the <code>TRUE</code> argument of <code>case_when</code> is used to set the <code>med</code> percentile to 50.</p>
-<pre class="r"><code>  ) %&gt;% drop_na() %&gt;% mutate(IRS = case_when(dist_point == 'lo1' ~ IRS_lo1,
-                                                             dist_point == 'lo2' ~ IRS_lo2,
-                                                             dist_point == 'med' ~ IRS_med,
-                                                             dist_point == 'hi1' ~ IRS_hi1,
-                                                             dist_point == 'hi2' ~ IRS_hi2,
-                                                             TRUE ~ NA_real_),
-                                             RSD = case_when(dist_point == 'lo1' ~ lead(lead(IRS))-IRS,
-                                                             dist_point == 'lo2' ~ lead(IRS)-IRS,
-                                                             dist_point == 'med' ~ IRS,
-                                                             dist_point == 'hi1' ~ IRS-lag(IRS),
-                                                             dist_point == 'hi2' ~ IRS-lag(lag(IRS)),
-                                                             TRUE ~ NA_real_),
-                                             lohi_value = case_when(dist_point == 'lo1' ~ lo1,
-                                                             dist_point == 'lo2' ~ lo2,
-                                                             dist_point == 'hi1' ~ hi1,
-                                                             dist_point == 'hi2' ~ hi2,
-                                                             TRUE ~ 50)) %&gt;% </code></pre>
+<pre class="r"><code>      TRUE ~ NA_character_
+    )
+  ) %&gt;% drop_na() 
+
+df_interim &lt;- norm_build1 %&gt;% ungroup() %&gt;% 
+  mutate(
+    dist_point = case_when(
+      dist_point == 'lo1' ~ 'A',
+      dist_point == 'lo2' ~ 'B',
+      dist_point == 'med' ~ 'C',
+      dist_point == 'hi1' ~ 'D',
+      dist_point == 'hi2' ~ 'E',
+      TRUE ~ NA_character_
+    )
+  ) %&gt;% complete(
+    agestrat, dist_point
+  ) %&gt;%</code></pre>
 <p>In the next snippet, <code>select</code> subsets columns into only the ones needed going forward. <code>left_join</code> looks up normalized z-scores <code>z_score</code> associated with the values of <code>lo1</code>, <code>lo2</code>, <code>hi1</code> and <code>hi2</code>, using the key variable <code>by = 'lohi_value'</code>.</p>
 <p><code>mutate</code> creates new columns. <code>std_RSD</code> standardizes <code>RSD</code> by dividing it by <code>z_score</code>.</p>
 <p><code>SD</code> estimates the standard deviation separately, above and below the median. It does this by averaging the standardized raw-score difference from the median <code>std_RSD</code>, across <code>lo1</code> and <code>lo2</code>, and separately across <code>hi1</code> and <code>hi2</code>. The calculation formula uses the <code>lead</code> operator to average adjacent cellls in the <code>std_RSD</code> column, and uses <code>case_when</code> to place the calculated values in the cells associated with <code>lo1</code> and <code>hi1</code>, setting all other cells in the <code>SD</code> column to <code>NA</code> (using <code>TRUE ~ NA_real_</code>).</p>
 <p><code>mutate</code> then creates the columns needed for the final summary table. <code>median</code> plucks the imputed median <code>IRS</code> associated with <code>dist_point</code> <code>med</code>, <code>lo_SD</code> plucks <code>SD</code> associated with <code>dist_point</code> <code>lo1</code> (the estimated SD <em>below</em> the median), and <code>hi_SD</code> plucks <code>SD</code> associated with <code>dist_point</code> <code>hi1</code> (the estimated SD <em>above</em> the median). The values are placed in the same row as the <code>dist_point</code> in all three columns, with all other cells set to <code>NA</code>.</p>
-<pre class="r"><code>  select(agestrat, lo1, lo2, hi1, hi2, dist_point, lohi_value, IRS, RSD) %&gt;% left_join(perc_z, by = 'lohi_value') %&gt;% 
-  mutate(std_RSD = RSD/z_score, SD = case_when(dist_point == 'lo1' | dist_point == 'hi1' ~ (std_RSD+lead(std_RSD))/2,
-                                                                                            TRUE ~ NA_real_),
-         median = case_when(dist_point == 'med' ~ IRS,
-                            TRUE ~ NA_real_),
-         lo_SD = case_when(dist_point == 'lo1' ~ SD,
-                           TRUE ~ NA_real_),
-         hi_SD = case_when(dist_point == 'hi1' ~ SD,
-                           TRUE ~ NA_real_))</code></pre>
+<pre class="r"><code>  fill(
+    !!as.name(score_name):IRS_hi2
+  ) %&gt;% 
+  fill(
+    !!as.name(score_name):IRS_hi2,
+    .direction = &quot;up&quot;
+  ) %&gt;% 
+  mutate(
+    dist_point = case_when(</code></pre>
 <p>The final snippet creates the summary table <code>norm_build_med_hilo_sum</code> used in the next stage of the norming process. <code>summarise</code> takes the current data object <code>norm_build1</code> (already grouped by <code>agestrat</code>) as its input, outputting a summary table with 27 rows (one for each <code>agestrat</code>). The new summary columns are all built on columns from <code>norm_build1</code> that have only a single value per <code>agestrat</code>, meaning that the required value for the summary column can be plucked using the <code>first</code> operator.</p>
 <p>The challenge with <code>median</code>, <code>lo_SD</code>, and <code>hi_SD</code> is that the single required value is embedded among multiple <code>NA</code>. To prevent <code>first</code> from plucking <code>NA</code>, it is wrapped around <code>na.omit</code>, which causes <code>first</code> to ignore <code>NA</code> until it finds a numerical value.</p>
 <p>Finally, mutate adds an effect size column <code>ES</code> to the summary table, which gives the effect size of the difference between medians from one <code>agestrat</code> to the next. It then adds an ordinal <code>group</code> column and moves that to left-most position with <code>select</code> and the helper function <code>everything()</code>, i.e., specifying the column position of <code>group</code> relative to all other columns in the table.</p>
-<pre class="r"><code>norm_build_med_hilo_sum &lt;-
-  norm_build1 %&gt;% summarise(
-    lo1 = first(lo1),
-    lo2 = first(lo2),
-    hi1 = first(hi1),
-    hi2 = first(hi2),
-    median = first(na.omit(median)),
-    lo_SD = first(na.omit(lo_SD)),
-    hi_SD = first(na.omit(hi_SD))
-  ) %&gt;% mutate(ES = (median - lag(median))/((hi_SD+lag(hi_SD)+lo_SD+lag(lo_SD))/4), group = 1:27) %&gt;% select(group, everything())</code></pre>
+<pre class="r"><code>      dist_point == 'B' ~ 'lo2',
+      dist_point == 'C' ~ 'med',
+      dist_point == 'D' ~ 'hi1',
+      dist_point == 'E' ~ 'hi2',
+      TRUE ~ NA_character_
+    )
+  ) %&gt;% group_by(agestrat)
+rm(norm_build1)
+
+norm_build1 &lt;- df_interim %&gt;% mutate(</code></pre>
 <p><br></p>
 </div>
 </div>
