@@ -405,7 +405,7 @@ raw_vs_imputed_plot_prompt ()
 ###################
 
 # clean up environment
-v <- c(paste0(score_name, '_age_lo1lo2_hi1hi2'), paste0(score_name, '_raw_by_agestrat'))
+v <- c(paste0(score_name, '_age_lo1lo2_hi1hi2'))
 rm(norm_build1, list = v)
 
 # Plot median, lo_SD, hi_SD with regression lines and fit statistics.
@@ -792,7 +792,7 @@ mean_plot_compare_prompt ()
 
 
 # Clean up environment
-rm(list = ls()[!ls() %in% c("smooth_med_SD", "model_median", "model_lo_SD", "model_hi_SD", "score_name", "agestrat",
+rm(list = ls()[!ls() %in% c("smooth_med_SD", "model_median", "model_lo_SD", "model_hi_SD", "score_name", "agestrat", "input_file_name", paste0(score_name, '_raw_by_agestrat'),
                             "num_agestrat", "max_raw", "min_raw", "scale_y_ceiling_mean", "scale_y_ceiling_SD", "mean_plot")])
 
 # Next code section can deal with situation where smoothed medians have effect
