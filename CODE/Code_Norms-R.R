@@ -1304,3 +1304,29 @@ write_csv(norms_pub, here(
     '.csv'
   )
 ))
+
+# generate SS per case and write data file to .csv
+eval(as.name(paste0(score_name, '_raw_by_agestrat'))) %>% 
+  left_join(
+    final_med_SD_table,
+    by = 'agestrat'
+  ) %>% 
+  mutate(!!as.name(paste0(score_name, '_SS')) := case_when(
+    !!as.name(score_name) <= smoothed_median ~ round(100+(((!!as.name(score_name)-smoothed_median)/smoothed_lo_SD)*15), 0),
+    TRUE ~ round(100+(((!!as.name(score_name)-smoothed_median)/smoothed_hi_SD)*15), 0)
+  )) %>% 
+  select(
+    ID, agestrat, adpscore_teacher, adpscore_teacher_SS
+  ) %>% 
+  assign('SS_per_case', ., envir = .GlobalEnv)
+
+write_csv(SS_per_case, here(
+  paste0(
+    'OUTPUT-FILES/SS-PER-CASE/',
+    score_name,
+    '-SS-per-case-',
+    format(Sys.Date(), "%Y-%m-%d"),
+    '.csv'
+  )
+))
+
