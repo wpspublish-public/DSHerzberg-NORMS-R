@@ -259,7 +259,53 @@ dat <- fread(here("DATA/Age_x_gender_final.csv"), select = c("male","female"))
 ```
 All three `read` functions create tibble data frame (df is generic notation to indicate that object is a data frame). Tibbles are a data format introduced as part of the tidyverse package. Tibbles are easier to manipulate than base-R data frames. Note `.\data.xlsx` directory structure. Best practice in R is to use relative file paths. Create an R project for your work, and open that project to begin your session. The folder where your R project lives is given by the dot ‘.’ at the beginning of file path.
 
+<br>
 
+##### READ MULTIPLE FILES
+###### CODE EXAMPLE
+```{r read_multiple, eval=FALSE}
+file_names <- list.files(
+  path = here(
+    'INPUT-FILES/GDS'
+    )
+  )
+list <- map(
+  file_names,
+  ~ read_csv(
+    here(
+      paste0(
+        'INPUT-FILES/GDS/', 
+        .x)
+      )
+    )
+  )
+names(list) <-   c("DP4_interview_ADP_SS", "DP4_interview_COG_SS", "DP4_interview_COM_SS",
+                   "DP4_interview_PHY_SS", "DP4_interview_SOC_SS", "DP4_teacher_ADP_SS",  
+                   "DP4_teacher_COG_SS", "DP4_teacher_COM_SS", "DP4_teacher_PHY_SS",  
+                   "DP4_teacher_SOC_SS")
+list2env(
+  list,
+  envir=.GlobalEnv
+  )
+rm(list)
+
+```
+###### COMMENTED CODE CHUNKS
+Use `base::list.files()` to get a character vector containing the names of the files you want to read in. `list.files()` captures all the file names in the designated directory. To narrow the list, use `pattern` argument.
+```{r read_multiple, echo=1:5, eval=FALSE}
+```
+Use `purrr::map()` and `read_csv()` to read in multiple `.csv` files. The output of this `map()` call is a list of data frames `list <- map()`. `map()` iterates over the vector containing the names of the target files `file_names`. The `~` shorthand is used to designate `read_csv` as the function to be iterated over. In this operation, files will be read into `list` from the directory given by `here()`. The `.x` token is a stand-in for the names contained in `file_names`.
+```{r read_multiple, echo=6:15, eval=FALSE}
+```
+`base::names()` is used to assign names to the data frames contained in `list`.
+```{r read_multiple, echo=16:19, eval=FALSE}
+```
+`base::list2env()` is used to "unpack" the list. It takes a list of named elements `list` as its first argument. `envir=.GlobalEnv` specifies that the unpacked data frames will be assigned to the global environment.
+```{r read_multiple, echo=20:23, eval=FALSE}
+```
+Clean up the environment by removing `base::rm()` the now-superfluous large `list` object.
+```{r read_multiple, echo=24, eval=FALSE}
+```
 <br>
 
 #### RENAME VARIABLES
