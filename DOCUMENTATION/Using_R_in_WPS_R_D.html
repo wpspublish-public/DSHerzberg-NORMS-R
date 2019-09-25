@@ -420,8 +420,8 @@ glimpse(df)</code></pre>
 <p><br></p>
 </div>
 </div>
-<div id="read-data" class="section level4">
-<h4>READ DATA</h4>
+<div id="read-single-data-file" class="section level4">
+<h4>READ SINGLE DATA FILE</h4>
 <div id="r-functions-1" class="section level6">
 <h6>R functions:</h6>
 <p><code>haven::read_sav()</code><br />
@@ -448,8 +448,9 @@ glimpse(df)</code></pre>
 <p>All three <code>read</code> functions create tibble data frame (df is generic notation to indicate that object is a data frame). Tibbles are a data format introduced as part of the tidyverse package. Tibbles are easier to manipulate than base-R data frames. Note <code>.\data.xlsx</code> directory structure. Best practice in R is to use relative file paths. Create an R project for your work, and open that project to begin your session. The folder where your R project lives is given by the dot ‘.’ at the beginning of file path.</p>
 <p><br></p>
 </div>
-<div id="read-multiple-files" class="section level5">
-<h5>READ MULTIPLE FILES</h5>
+</div>
+<div id="read-multiple-data-files" class="section level4">
+<h4>READ MULTIPLE DATA FILES</h4>
 <div id="code-example" class="section level6">
 <h6>CODE EXAMPLE</h6>
 <pre class="r"><code>file_names &lt;- list.files(
@@ -509,7 +510,6 @@ rm(list)</code></pre>
 <p>Clean up the environment by removing <code>base::rm()</code> the now-superfluous large <code>list</code> object.</p>
 <pre class="r"><code>rm(list)</code></pre>
 <p><br></p>
-</div>
 </div>
 </div>
 <div id="rename-variables" class="section level4">

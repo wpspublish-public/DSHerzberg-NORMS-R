@@ -226,7 +226,7 @@ Generate table of descriptive statistics `tot_desc`. Pipe `df` into `summarise`,
 
 <br>
 
-#### READ DATA
+#### READ SINGLE DATA FILE
 
 ###### R functions:
 `haven::read_sav()`   
@@ -261,7 +261,7 @@ All three `read` functions create tibble data frame (df is generic notation to i
 
 <br>
 
-##### READ MULTIPLE FILES
+#### READ MULTIPLE DATA FILES
 ###### CODE EXAMPLE
 ```{r read_multiple, eval=FALSE}
 file_names <- list.files(
