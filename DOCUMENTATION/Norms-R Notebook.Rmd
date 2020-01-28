@@ -112,7 +112,7 @@ This script takes as input a table containing cases of a raw score to be normed.
 
 <br>
 
-#### Select method for entering input parameters; read input dataa
+#### Select method for entering input parameters; read input data
 
 ###### VALID CODE TO RUN
 ```{r input, eval=FALSE}
